@@ -24,3 +24,14 @@ model User {
   role      Role     @default(CUSTOMER)
   createdAt DateTime @default(now())
 }
+
+model Otp {
+  id        Int      @id @default(autoincrement())
+  phone     String
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+}
