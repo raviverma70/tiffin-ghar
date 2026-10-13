@@ -1,28 +1,22 @@
-import "dotenv/config";
 import { Router } from "express";
-import { createHmac, randomInt,timingSafeEqual } from "crypto";
-import { prisma } from "../lib/prisma.js";
+import { createHmac, randomInt, timingSafeEqual } from "crypto";
 import jwt from "jsonwebtoken";
+import { prisma } from "../lib/prisma.js";
+import { env } from "../config/env.js";
+import { validate } from "../middleware/validate.js";
+import { sendOtpLimiter, verifyOtpLimiter } from "../middleware/rateLimit.js";
+import { sendOtpSchema, verifyOtpSchema } from "../validators/auth.js";
 
 const router = Router();
 
-// OTP ka hash banata hai (asli OTP database me kabhi save nahi hota)
-export function hashOtp(phone: string, code: string) {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) throw new Error("JWT_SECRET .env me nahi mila");
-  return createHmac("sha256", secret).update(`${phone}:${code}`).digest("hex");
+function hashOtp(phone: string, code: string) {
+  return createHmac("sha256", env.JWT_SECRET).update(`${phone}:${code}`).digest("hex");
 }
 
-router.post("/send-otp", async (req, res) => {
+router.post("/send-otp", sendOtpLimiter, validate(sendOtpSchema), async (req, res, next) => {
   try {
-    const phone = String(req.body?.phone ?? "").trim();
+    const { phone } = req.body;
 
-    // 10 digit ka Indian mobile number (6, 7, 8 ya 9 se shuru)
-    if (!/^[6-9]\d{9}$/.test(phone)) {
-      return res.status(400).json({ error: "Sahi 10 digit ka mobile number daalo" });
-    }
-
-    // 60 second ke andar dobara OTP nahi (spam rokne ke liye)
     const last = await prisma.otp.findFirst({
       where: { phone },
       orderBy: { createdAt: "desc" },
@@ -31,40 +25,35 @@ router.post("/send-otp", async (req, res) => {
       return res.status(429).json({ error: "Thoda ruko, 1 minute baad dobara try karo" });
     }
 
-    const code = String(randomInt(100000, 1000000)); // 6 digit
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minute
+    const code = String(randomInt(100000, 1000000));
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-    await prisma.otp.deleteMany({ where: { phone } }); // purane OTP hatao
+    await prisma.otp.deleteMany({ where: { phone } });
     await prisma.otp.create({
       data: { phone, codeHash: hashOtp(phone, code), expiresAt },
     });
 
-    // Abhi sirf terminal me. Asli SMS service baad me.
-    console.log(`OTP for ${phone}: ${code}`);
+    // Asli SMS baad me. Production me OTP kabhi print nahi hoga.
+    if (env.NODE_ENV !== "production") {
+      console.log(`OTP for ${phone}: ${code}`);
+    }
 
     res.json({ message: "OTP bhej diya gaya" });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: "Kuch gadbad hui, baad me try karo" });
+    next(e);
   }
 });
-router.post("/verify-otp", async (req, res) => {
-  try {
-    const phone = String(req.body?.phone ?? "").trim();
-    const code = String(req.body?.code ?? "").trim();
 
-    if (!/^[6-9]\d{9}$/.test(phone) || !/^\d{6}$/.test(code)) {
-      return res.status(400).json({ error: "Phone aur 6 digit ka OTP daalo" });
-    }
+router.post("/verify-otp", verifyOtpLimiter, validate(verifyOtpSchema), async (req, res, next) => {
+  try {
+    const { phone, code } = req.body;
 
     const otp = await prisma.otp.findFirst({
       where: { phone },
       orderBy: { createdAt: "desc" },
     });
 
-    if (!otp) {
-      return res.status(400).json({ error: "Pehle OTP maango" });
-    }
+    if (!otp) return res.status(400).json({ error: "Pehle OTP maango" });
     if (otp.expiresAt.getTime() < Date.now()) {
       return res.status(400).json({ error: "OTP expire ho gaya, naya maango" });
     }
@@ -72,7 +61,6 @@ router.post("/verify-otp", async (req, res) => {
       return res.status(429).json({ error: "Bahut galat koshish, naya OTP maango" });
     }
 
-    // Hash match karo
     const given = Buffer.from(hashOtp(phone, code));
     const saved = Buffer.from(otp.codeHash);
     const ok = given.length === saved.length && timingSafeEqual(given, saved);
@@ -85,27 +73,21 @@ router.post("/verify-otp", async (req, res) => {
       return res.status(400).json({ error: "OTP galat hai" });
     }
 
-    // Sahi OTP: use hata do (ek OTP sirf ek baar chalta hai)
     await prisma.otp.deleteMany({ where: { phone } });
 
-    // User hai to wahi, nahi to naya bana do
     const user = await prisma.user.upsert({
       where: { phone },
       update: {},
       create: { phone },
     });
 
-    const secret = process.env.JWT_SECRET;
-    if (!secret) throw new Error("JWT_SECRET .env me nahi mila");
-
-    const token = jwt.sign({ userId: user.id, role: user.role }, secret, {
+    const token = jwt.sign({ userId: user.id, role: user.role }, env.JWT_SECRET, {
       expiresIn: "30d",
     });
 
     res.json({ token, user });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: "Kuch gadbad hui, baad me try karo" });
+    next(e);
   }
 });
 
