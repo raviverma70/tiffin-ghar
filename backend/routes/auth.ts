@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { createHmac, randomInt, timingSafeEqual } from "crypto";
-import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
 import { env } from "../config/env.js";
 import { validate } from "../middleware/validate.js";
-import { sendOtpLimiter, verifyOtpLimiter } from "../middleware/rateLimit.js";
-import { sendOtpSchema, verifyOtpSchema } from "../validators/auth.js";
+import { sendOtpLimiter, verifyOtpLimiter, refreshLimiter } from "../middleware/rateLimit.js";
+import { sendOtpSchema, verifyOtpSchema, refreshSchema } from "../validators/auth.js";
+import { hashToken, signAccessToken, issueRefreshToken } from "../lib/tokens.js";
 
 const router = Router();
 
@@ -81,11 +81,60 @@ router.post("/verify-otp", verifyOtpLimiter, validate(verifyOtpSchema), async (r
       create: { phone },
     });
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, env.JWT_SECRET, {
-      expiresIn: "30d",
+    const accessToken = signAccessToken(user);
+    const refreshToken = await issueRefreshToken(user.id);
+
+    res.json({ accessToken, refreshToken, user });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post("/refresh", refreshLimiter, validate(refreshSchema), async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+
+    const saved = await prisma.refreshToken.findUnique({
+      where: { tokenHash: hashToken(refreshToken) },
+      include: { user: true },
     });
 
-    res.json({ token, user });
+    if (!saved || saved.expiresAt.getTime() < Date.now()) {
+      return res.status(401).json({ error: "Session khatam ho gaya, dobara login karo" });
+    }
+
+    // Band hua token dobara aaya: chori ka shak, poori family band
+    if (saved.revokedAt) {
+      await prisma.refreshToken.updateMany({
+        where: { familyId: saved.familyId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+      return res.status(401).json({ error: "Session khatam ho gaya, dobara login karo" });
+    }
+
+    // Purana token band karo. count 0 matlab kisi aur request ne abhi use band kar diya
+    const closed = await prisma.refreshToken.updateMany({
+      where: { id: saved.id, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    if (closed.count === 0) {
+      return res.status(401).json({ error: "Session khatam ho gaya, dobara login karo" });
+    }
+
+    const newRefresh = await issueRefreshToken(saved.userId, saved.familyId);
+    res.json({ accessToken: signAccessToken(saved.user), refreshToken: newRefresh });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post("/logout", refreshLimiter, validate(refreshSchema), async (req, res, next) => {
+  try {
+    await prisma.refreshToken.updateMany({
+      where: { tokenHash: hashToken(req.body.refreshToken), revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    res.json({ message: "Logout ho gaya" });
   } catch (e) {
     next(e);
   }

@@ -23,6 +23,7 @@ model User {
   name      String?
   role      Role     @default(CUSTOMER)
   createdAt DateTime @default(now())
+    refreshTokens RefreshToken[]
 }
 
 model Otp {
@@ -32,6 +33,20 @@ model Otp {
   expiresAt DateTime
   attempts  Int      @default(0)
   createdAt DateTime @default(now())
+  
 
   @@index([phone])
+}
+model RefreshToken {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  familyId  String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([familyId])
 }

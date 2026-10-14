@@ -11,3 +11,6 @@ export const verifyOtpSchema = z.object({
   phone,
   code: z.string().trim().regex(/^\d{6}$/, "6 digit ka OTP daalo"),
 });
+export const refreshSchema = z.object({
+  refreshToken: z.string().trim().regex(/^[a-f0-9]{96}$/, "Refresh token galat hai"),
+});
