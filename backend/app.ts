@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { prisma } from "./lib/prisma.js";
 import authRouter from "./routes/auth.js";
+import providersRouter from "./routes/providers.js";
 import { requireAuth, type AuthedRequest } from "./middleware/auth.js";
 import { globalLimiter } from "./middleware/rateLimit.js";
 
@@ -20,7 +21,7 @@ app.get("/", (req, res) => {
 const api = express.Router();
 
 api.use("/auth", authRouter);
-
+api.use("/providers", providersRouter);
 api.get("/me", requireAuth, async (req: AuthedRequest, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.auth!.userId } });
