@@ -70,6 +70,22 @@ model Provider {
   isOpen      Boolean        @default(false)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+    menuItems   MenuItem[]
 
   @@index([city])
+}
+model MenuItem {
+  id          Int      @id @default(autoincrement())
+  providerId  Int
+  provider    Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  pricePaise  Int
+  dayOfWeek   Int?
+  isVeg       Boolean  @default(true)
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([providerId])
 }
