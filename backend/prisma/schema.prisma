@@ -25,6 +25,7 @@ model User {
   createdAt DateTime @default(now())
     refreshTokens RefreshToken[]
       provider      Provider?
+        orders Order[]
 }
 
 model Otp {
@@ -71,6 +72,7 @@ model Provider {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
     menuItems   MenuItem[]
+      orders Order[]
 
   @@index([city])
 }
@@ -86,6 +88,50 @@ model MenuItem {
   isAvailable Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+    orderItems OrderItem[]
 
   @@index([providerId])
+}
+enum OrderStatus {
+  PLACED
+  ACCEPTED
+  PREPARING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  REJECTED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  COD
+}
+
+model Order {
+  id              Int           @id @default(autoincrement())
+  userId          Int
+  user            User          @relation(fields: [userId], references: [id])
+  providerId      Int
+  provider        Provider      @relation(fields: [providerId], references: [id])
+  status          OrderStatus   @default(PLACED)
+  paymentMethod   PaymentMethod @default(COD)
+  totalPaise      Int
+  deliveryAddress String
+  note            String?
+  items           OrderItem[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([providerId, status])
+}
+
+model OrderItem {
+  id         Int       @id @default(autoincrement())
+  orderId    Int
+  order      Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId Int?
+  menuItem   MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+  name       String
+  pricePaise Int
+  quantity   Int
 }

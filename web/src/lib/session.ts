@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { API_URL } from "@/lib/api";
-
 export const ACCESS_COOKIE = "tg_access";
 export const REFRESH_COOKIE = "tg_refresh";
 
