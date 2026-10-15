@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getProviders, type Provider } from "@/lib/api";
+import { getCurrentUser } from "@/lib/session";
+import { logoutAction } from "@/app/login/actions";
 
 export default async function Home({
   searchParams,
@@ -8,6 +10,10 @@ export default async function Home({
 }) {
   const { city } = await searchParams;
   const query = city?.trim();
+
+  // Login ke baad isi page par wapas aane ke liye
+  const here = query ? `/?city=${encodeURIComponent(query)}` : "/";
+  const user = await getCurrentUser(here);
 
   let providers: Provider[] | null = null;
   let error = "";
@@ -22,7 +28,24 @@ export default async function Home({
 
   return (
     <main className="mx-auto max-w-2xl p-6">
-      <h1 className="text-3xl font-bold">Tiffin Ghar</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Tiffin Ghar</h1>
+        {user ? (
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-gray-600">{user.phone}</span>
+            <form action={logoutAction}>
+              <button className="rounded border px-3 py-1">Logout</button>
+            </form>
+          </div>
+        ) : (
+          <Link
+            href={`/login?next=${encodeURIComponent(here)}`}
+            className="rounded border px-3 py-1 text-sm"
+          >
+            Login
+          </Link>
+        )}
+      </div>
       <p className="mt-1 text-gray-600">Ghar ka khana, aapke shehar me.</p>
 
       <form className="mt-6 flex gap-2">
