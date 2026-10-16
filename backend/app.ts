@@ -8,6 +8,7 @@ import menuRouter from "./routes/menu.js";
 import { requireAuth, type AuthedRequest } from "./middleware/auth.js";
 import { globalLimiter } from "./middleware/rateLimit.js";
 import publicProvidersRouter from "./routes/publicProviders.js";
+import ordersRouter from "./routes/orders.js";
 
 export const app = express();
 
@@ -26,6 +27,7 @@ api.use("/auth", authRouter);
 api.use("/providers/me/menu", menuRouter);
 api.use("/providers", providersRouter);
 api.use("/providers", publicProvidersRouter);
+api.use("/orders", ordersRouter);
 api.get("/me", requireAuth, async (req: AuthedRequest, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.auth!.userId } });
