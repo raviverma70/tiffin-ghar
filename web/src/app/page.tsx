@@ -9,6 +9,7 @@ export default async function Home({
   searchParams: Promise<{ city?: string }>;
 }) {
   const { city } = await searchParams;
+  
   const query = city?.trim();
 
   // Login ke baad isi page par wapas aane ke liye
@@ -34,6 +35,9 @@ export default async function Home({
           <div className="flex items-center gap-3 text-sm">
             <span className="text-gray-600">{user.phone}</span>
             <form action={logoutAction}>
+              <Link href="/orders" className="text-orange-600">
+                Mere orders
+                 </Link>
               <button className="rounded border px-3 py-1">Logout</button>
             </form>
           </div>

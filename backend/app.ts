@@ -9,6 +9,7 @@ import { requireAuth, type AuthedRequest } from "./middleware/auth.js";
 import { globalLimiter } from "./middleware/rateLimit.js";
 import publicProvidersRouter from "./routes/publicProviders.js";
 import ordersRouter from "./routes/orders.js";
+import providerOrdersRouter from "./routes/providerOrders.js";
 
 export const app = express();
 
@@ -25,6 +26,7 @@ const api = express.Router();
 
 api.use("/auth", authRouter);
 api.use("/providers/me/menu", menuRouter);
+api.use("/providers/me/orders", providerOrdersRouter);
 api.use("/providers", providersRouter);
 api.use("/providers", publicProvidersRouter);
 api.use("/orders", ordersRouter);
