@@ -4,13 +4,103 @@ import { prisma } from "../lib/prisma.js";
 import { validate } from "../middleware/validate.js";
 import { requireAuth, type AuthedRequest } from "../middleware/auth.js";
 import { orderLimiter } from "../middleware/rateLimit.js";
-import { createOrderSchema } from "../validators/order.js";
+import { createOrderSchema, listOrdersQuery } from "../validators/order.js";
 import { todayInIndia } from "../lib/time.js";
 
 const router = Router();
 
 // Is router ke saare routes ke liye login zaroori
 router.use(requireAuth);
+
+const orderInclude = {
+  items: { select: { id: true, name: true, pricePaise: true, quantity: true } },
+  provider: { select: { id: true, shopName: true } },
+};
+
+function parseId(value: unknown) {
+  const id = Number(String(value));
+  return Number.isInteger(id) && id >= 1 && id <= 2_147_483_647 ? id : null;
+}
+
+// Mere orders (naya pehle)
+router.get("/", async (req: AuthedRequest, res, next) => {
+  try {
+    const parsed = listOrdersQuery.safeParse(req.query);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.issues[0]?.message ?? "Galat input" });
+    }
+    const { page, limit } = parsed.data;
+    const where = { userId: req.auth!.userId };
+
+    const [items, total] = await prisma.$transaction([
+      prisma.order.findMany({
+        where,
+        include: orderInclude,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.order.count({ where }),
+    ]);
+
+    res.json({ items, total, page, limit });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Mera ek order
+router.get("/:id", async (req: AuthedRequest, res, next) => {
+  try {
+    const id = parseId(req.params.id);
+    if (!id) return res.status(400).json({ error: "Galat order id" });
+
+    const order = await prisma.order.findFirst({
+      where: { id, userId: req.auth!.userId },
+      include: orderInclude,
+    });
+    if (!order) return res.status(404).json({ error: "Order nahi mila" });
+
+    res.json(order);
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Order cancel (sirf jab tak provider ne accept nahi kiya)
+router.patch("/:id/cancel", async (req: AuthedRequest, res, next) => {
+  try {
+    const id = parseId(req.params.id);
+    if (!id) return res.status(400).json({ error: "Galat order id" });
+    const userId = req.auth!.userId;
+
+    // Ek hi query me check aur badlav, taaki accept aur cancel ek saath ho to dikkat na ho
+    const result = await prisma.order.updateMany({
+      where: { id, userId, status: "PLACED" },
+      data: { status: "CANCELLED" },
+    });
+
+    if (result.count === 0) {
+      const existing = await prisma.order.findFirst({
+        where: { id, userId },
+        select: { status: true },
+      });
+      if (!existing) return res.status(404).json({ error: "Order nahi mila" });
+      if (existing.status === "CANCELLED") {
+        return res.status(409).json({ error: "Order pehle hi cancel ho chuka hai" });
+      }
+      return res.status(409).json({ error: "Ab ye order cancel nahi ho sakta" });
+    }
+
+    const order = await prisma.order.findFirst({
+      where: { id, userId },
+      include: orderInclude,
+    });
+    res.json(order);
+  } catch (e) {
+    next(e);
+  }
+});
 
 // Naya order (customer)
 router.post("/", orderLimiter, validate(createOrderSchema), async (req: AuthedRequest, res, next) => {
@@ -76,10 +166,7 @@ router.post("/", orderLimiter, validate(createOrderSchema), async (req: AuthedRe
         note: note ? note : null,
         items: { create: lines },
       },
-      include: {
-        items: { select: { id: true, name: true, pricePaise: true, quantity: true } },
-        provider: { select: { id: true, shopName: true } },
-      },
+      include: orderInclude,
     });
 
     res.status(201).json(order);

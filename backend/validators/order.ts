@@ -29,3 +29,12 @@ export const createOrderSchema = z.object({
     .max(250, "Pata 250 akshar se chhota rakho"),
   note: z.string().trim().max(200, "Note 200 akshar se chhota rakho").optional(),
 });
+export const listOrdersQuery = z.object({
+  page: z.coerce.number().int().min(1, "Page 1 ya usse bada hona chahiye").default(1),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1, "Limit 1 se 50 ke beech rakho")
+    .max(50, "Limit 1 se 50 ke beech rakho")
+    .default(20),
+});
