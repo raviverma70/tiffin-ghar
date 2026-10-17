@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getProviders, type Provider } from "@/lib/api";
 import { getCurrentUser } from "@/lib/session";
 import { logoutAction } from "@/app/login/actions";
+import DashboardLink from "@/components/dashboard-link";
 
 export default async function Home({
   searchParams,
@@ -38,6 +39,7 @@ export default async function Home({
               <Link href="/orders" className="text-orange-600">
                 Mere orders
                  </Link>
+                 <DashboardLink />
               <button className="rounded border px-3 py-1">Logout</button>
             </form>
           </div>

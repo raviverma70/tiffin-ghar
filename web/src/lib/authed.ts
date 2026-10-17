@@ -10,7 +10,7 @@ type Options = {
   body?: unknown;
 };
 
-async function refreshInline(): Promise<string | null> {
+export async function refreshInline(): Promise<string | null> {
   const store = await cookies();
   const refresh = store.get(REFRESH_COOKIE)?.value;
   if (!refresh) return null;
