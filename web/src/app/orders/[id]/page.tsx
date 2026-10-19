@@ -3,6 +3,7 @@ import { authedFetch } from "@/lib/authed";
 import { formatDate, formatPrice } from "@/lib/format";
 import { STATUS_LABEL, type Order } from "@/lib/orders";
 import { cancelOrderAction } from "../actions";
+import AutoRefresh from "@/components/auto-refresh";
 
 export default async function OrderPage({
   params,
@@ -30,6 +31,7 @@ export default async function OrderPage({
   if (!res.ok) {
     return (
       <main className="mx-auto max-w-2xl p-6">
+            
         <Link href="/orders" className="text-orange-600">
           &larr; Mere orders
         </Link>
@@ -42,6 +44,9 @@ export default async function OrderPage({
 
   return (
     <main className="mx-auto max-w-2xl p-6">
+            {["PLACED", "ACCEPTED", "PREPARING", "OUT_FOR_DELIVERY"].includes(order.status) && (
+        <AutoRefresh seconds={15} />
+      )}
       <Link href="/orders" className="text-orange-600">
         &larr; Mere orders
       </Link>

@@ -32,14 +32,14 @@ export default async function Home({
     <main className="mx-auto max-w-2xl p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Tiffin Ghar</h1>
-        {user ? (
+                {user ? (
           <div className="flex items-center gap-3 text-sm">
             <span className="text-gray-600">{user.phone}</span>
+            <Link href="/orders" className="text-orange-600">
+              Mere orders
+            </Link>
+            <DashboardLink />
             <form action={logoutAction}>
-              <Link href="/orders" className="text-orange-600">
-                Mere orders
-                 </Link>
-                 <DashboardLink />
               <button className="rounded border px-3 py-1">Logout</button>
             </form>
           </div>

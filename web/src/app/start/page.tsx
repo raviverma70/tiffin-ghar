@@ -3,12 +3,15 @@ import { getCurrentUser } from "@/lib/session";
 
 export default async function StartPage() {
   const user = await getCurrentUser("/start");
-  if (!user) redirect("/login?next=%2Fstart");
+  const target = !user
+    ? "/login?next=%2Fstart"
+    : user.role === "PROVIDER"
+      ? "/dashboard"
+      : user.role === "ADMIN"
+        ? "/admin"
+        : "/";
 
-  if (user.role === "PROVIDER") redirect("/dashboard");
+  redirect(target);
 
-  // CUSTOMER (ya ADMIN) ko home par bhejte hain
-  redirect("/");
-
-  return null;
+  return <p>Ruko...</p>;
 }

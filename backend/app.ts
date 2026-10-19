@@ -10,6 +10,7 @@ import { globalLimiter } from "./middleware/rateLimit.js";
 import publicProvidersRouter from "./routes/publicProviders.js";
 import ordersRouter from "./routes/orders.js";
 import providerOrdersRouter from "./routes/providerOrders.js";
+import adminRouter from "./routes/admin.js";
 
 export const app = express();
 
@@ -30,6 +31,7 @@ api.use("/providers/me/orders", providerOrdersRouter);
 api.use("/providers", providersRouter);
 api.use("/providers", publicProvidersRouter);
 api.use("/orders", ordersRouter);
+api.use("/admin", adminRouter);
 api.get("/me", requireAuth, async (req: AuthedRequest, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.auth!.userId } });

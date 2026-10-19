@@ -6,14 +6,36 @@ import LoginForm from "./LoginForm";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; as?: string }>;
 }) {
-  const { next } = await searchParams;
-  const target = safeNext(next);
+  const { next, as } = await searchParams;
+  const nextPath = safeNext(next);
+
+  // Tab: ?as= se, nahi to next dekhkar tay karo
+  const role: "customer" | "provider" =
+    as === "provider" || as === "customer"
+      ? as
+      : nextPath.startsWith("/start") || nextPath.startsWith("/dashboard")
+        ? "provider"
+        : "customer";
+
+  // Provider tab me jab tak koi khaas page (jaise /orders) na ho, login ke baad /start
+  const target = role === "provider" && nextPath === "/" ? "/start" : nextPath;
 
   // Pehle se login hai to seedha aage bhejo
   const session = await getSession();
   if (session.status === "user") redirect(target);
+
+  // Tab badalte waqt khaas page yaad rakho (provider ke apne raaste nahi)
+  const keep =
+    nextPath !== "/" && !nextPath.startsWith("/start") && !nextPath.startsWith("/dashboard")
+      ? `&next=${encodeURIComponent(nextPath)}`
+      : "";
+
+  const tab = (r: "customer" | "provider") =>
+    r === role
+      ? "flex-1 rounded bg-orange-600 px-3 py-2 text-center font-semibold text-white"
+      : "flex-1 rounded border px-3 py-2 text-center hover:bg-orange-50";
 
   return (
     <main className="mx-auto max-w-md p-6">
@@ -21,8 +43,23 @@ export default async function LoginPage({
         &larr; Wapas
       </Link>
       <h1 className="mt-4 text-3xl font-bold">Login</h1>
-      <p className="mt-1 text-gray-600">Apne mobile number se login karo, OTP aayega.</p>
-      <LoginForm next={target} />
+
+      <div className="mt-4 flex gap-2">
+        <Link href={`/login?as=customer${keep}`} className={tab("customer")}>
+          Customer
+        </Link>
+        <Link href={`/login?as=provider${keep}`} className={tab("provider")}>
+          Provider
+        </Link>
+      </div>
+
+      <p className="mt-4 text-gray-600">
+        {role === "provider"
+          ? "Apni tiffin dukaan sambhalne ke liye login karo. Pehli baar ho to login ke baad dukaan ki profile bharni hogi."
+          : "Tiffin order karne ke liye apne mobile number se login karo, OTP aayega."}
+      </p>
+
+      <LoginForm key={role} next={target} />
     </main>
   );
 }
