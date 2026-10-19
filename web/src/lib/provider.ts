@@ -9,6 +9,7 @@ export type ProviderProfile = {
   fssaiNumber: string | null;
   status: "PENDING" | "APPROVED" | "REJECTED";
   isOpen: boolean;
+    photoUrl: string | null;
 };
 
 export type DashMenuItem = {
@@ -19,6 +20,7 @@ export type DashMenuItem = {
   dayOfWeek: number | null;
   isVeg: boolean;
   isAvailable: boolean;
+    photoUrl: string | null;
 };
 
 export type ProviderOrder = {

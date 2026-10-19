@@ -12,6 +12,8 @@ import ordersRouter from "./routes/orders.js";
 import providerOrdersRouter from "./routes/providerOrders.js";
 import adminRouter from "./routes/admin.js";
 import reviewsRouter from "./routes/reviews.js";
+import photosRouter from "./routes/photos.js";
+import { UPLOAD_DIR } from "./lib/uploads.js";
 
 export const app = express();
 
@@ -34,6 +36,7 @@ api.use("/providers", publicProvidersRouter);
 api.use("/orders", ordersRouter);
 api.use("/admin", adminRouter);
 api.use(reviewsRouter);
+api.use("/providers", photosRouter);
 api.get("/me", requireAuth, async (req: AuthedRequest, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.auth!.userId } });
@@ -43,6 +46,15 @@ api.get("/me", requireAuth, async (req: AuthedRequest, res, next) => {
     next(e);
   }
 });
+app.use(
+  "/uploads",
+  (_req, res, next) => {
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    next();
+  },
+  express.static(UPLOAD_DIR, { maxAge: "7d", immutable: true, index: false, dotfiles: "deny" }),
+);
 
 app.use("/api/v1", api);
 

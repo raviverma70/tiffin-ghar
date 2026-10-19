@@ -8,6 +8,8 @@ import ProfileForm from "./profile-form";
 import { toggleOpenAction } from "./actions";
 import { getReviews } from "@/lib/reviews";
 import { RatingLine } from "@/components/stars";
+import PhotoUploader from "@/components/photo-uploader";
+import { photoSrc } from "@/lib/photo";
 
 function NewProfile() {
   return (
@@ -83,6 +85,13 @@ export default async function DashboardPage({
       {notice && (
         <p className="mt-4 rounded border border-red-600 p-3 text-red-600">{notice}</p>
       )}
+            <div className="mt-4 rounded-xl border bg-white p-4">
+        <p className="font-semibold">Dukaan ki photo</p>
+        <p className="text-sm text-gray-600">Customers ko dukaan ke card par yahi photo dikhegi.</p>
+        <div className="mt-3">
+          <PhotoUploader kind="shop" src={photoSrc(p.photoUrl)} />
+        </div>
+      </div>
 
       {p.status === "PENDING" && (
         <p className="mt-4 rounded border border-yellow-600 p-3">

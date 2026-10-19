@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { authedFetch, refreshInline } from "@/lib/authed";
 import { providerFetch } from "@/lib/provider-api";
 import { rupeesToPaise } from "@/lib/provider";
+import { uploadImage } from "@/lib/upload";
 
 export type FormState = { error: string; saved?: boolean };
 
@@ -191,4 +192,43 @@ export async function updateOrderStatusAction(fd: FormData): Promise<void> {
   // Customer ne beech me cancel kar diya ho to 409 aata hai, message upar dikhega
   if (!res.ok) redirect(withNotice(back, await errorOf(res)));
   redirect(back);
+}
+// ---------- Photo ----------
+
+export type PhotoState = { error: string };
+
+function photoPath(kind: string, id: string): string | null {
+  if (kind === "shop") return "/providers/me/photo";
+  if (kind === "menu" && /^\d{1,10}$/.test(id)) return `/providers/me/menu/${id}/photo`;
+  return null;
+}
+
+export async function uploadPhotoAction(_prev: PhotoState, fd: FormData): Promise<PhotoState> {
+  const path = photoPath(text(fd, "kind"), text(fd, "id"));
+  const file = fd.get("file");
+  if (!path || !(file instanceof File) || file.size === 0) return { error: "Photo nahi mili" };
+  if (file.size > 900_000) return { error: "Photo bahut badi hai" };
+
+  const res = await uploadImage(path, await file.arrayBuffer(), file.type || "image/jpeg", "/dashboard");
+  if (!res.ok) return { error: await errorOf(res) };
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/menu");
+  return { error: "" };
+}
+
+export async function removePhotoAction(_prev: PhotoState, fd: FormData): Promise<PhotoState> {
+  const path = photoPath(text(fd, "kind"), text(fd, "id"));
+  if (!path) return { error: "Photo nahi mili" };
+
+  const res = await providerFetch(path, {
+    mode: "action",
+    returnTo: "/dashboard",
+    method: "DELETE",
+  });
+  if (!res.ok) return { error: await errorOf(res) };
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/menu");
+  return { error: "" };
 }

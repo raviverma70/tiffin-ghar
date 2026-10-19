@@ -6,6 +6,8 @@ import DashNav from "@/components/dash-nav";
 import ConfirmButton from "@/components/confirm-button";
 import ItemForm from "./item-form";
 import { deleteMenuItemAction, toggleAvailableAction } from "../actions";
+import PhotoUploader from "@/components/photo-uploader";
+import { photoSrc } from "@/lib/photo";
 
 const small = "rounded border px-3 py-1 text-sm hover:bg-orange-50";
 
@@ -65,7 +67,7 @@ export default async function MenuPage({
       {items && items.length > 0 && (
         <ul className="mt-4 space-y-3">
           {items.map((item) => (
-            <li key={item.id} className="rounded border p-4">
+                        <li key={item.id} className="rounded-xl border bg-white p-4 shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="font-semibold">
@@ -86,6 +88,10 @@ export default async function MenuPage({
                   </p>
                 </div>
                 <p className="font-semibold">{formatPrice(item.pricePaise)}</p>
+              </div>
+
+              <div className="mt-3">
+                <PhotoUploader kind="menu" itemId={item.id} src={photoSrc(item.photoUrl)} />
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2">
