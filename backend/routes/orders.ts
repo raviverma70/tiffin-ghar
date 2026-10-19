@@ -15,6 +15,7 @@ router.use(requireAuth);
 const orderInclude = {
   items: { select: { id: true, name: true, pricePaise: true, quantity: true } },
   provider: { select: { id: true, shopName: true } },
+    review: { select: { rating: true, comment: true } },
 };
 
 function parseId(value: unknown) {

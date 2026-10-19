@@ -6,6 +6,8 @@ import type { ProviderProfile } from "@/lib/provider";
 import DashNav from "@/components/dash-nav";
 import ProfileForm from "./profile-form";
 import { toggleOpenAction } from "./actions";
+import { getReviews } from "@/lib/reviews";
+import { RatingLine } from "@/components/stars";
 
 function NewProfile() {
   return (
@@ -67,6 +69,7 @@ export default async function DashboardPage({
     returnTo: "/dashboard",
   });
   const newOrders = ordersRes.ok ? ((await ordersRes.json()) as { total: number }).total : null;
+    const reviews = await getReviews(p.id, 1, 1);
 
   return (
     <main className="mx-auto max-w-2xl p-6">
@@ -123,6 +126,17 @@ export default async function DashboardPage({
         </p>
         <p className="text-sm text-gray-600">Orders dekho aur status badlo &rarr;</p>
       </Link>
+            {reviews && (
+        <Link
+          href="/dashboard/reviews"
+          className="mt-3 block rounded border p-4 hover:bg-orange-50"
+        >
+          <p className="font-semibold">Reviews</p>
+          <p className="mt-1">
+            <RatingLine rating={reviews.provider.rating} count={reviews.provider.ratingCount} />
+          </p>
+        </Link>
+      )}
 
       <div className="mt-6 text-sm text-gray-600">
         <p>Pata: {p.address}</p>

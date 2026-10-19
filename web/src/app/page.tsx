@@ -3,6 +3,7 @@ import { getProviders, type Provider } from "@/lib/api";
 import { getCurrentUser } from "@/lib/session";
 import { logoutAction } from "@/app/login/actions";
 import DashboardLink from "@/components/dashboard-link";
+import { RatingLine } from "@/components/stars";
 
 export default async function Home({
   searchParams,
@@ -84,6 +85,9 @@ export default async function Home({
                 <p className="text-sm text-gray-600">
                   {p.city} - {p.pincode}
                 </p>
+                                <div className="mt-1">
+                  <RatingLine rating={p.rating} count={p.ratingCount} />
+                </div>
               </Link>
             </li>
           ))}

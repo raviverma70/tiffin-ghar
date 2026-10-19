@@ -4,9 +4,14 @@ const TABS = [
   { key: "home", href: "/dashboard", label: "Dukaan" },
   { key: "menu", href: "/dashboard/menu", label: "Menu" },
   { key: "orders", href: "/dashboard/orders", label: "Orders" },
+  { key: "reviews", href: "/dashboard/reviews", label: "Reviews" },
 ];
 
-export default function DashNav({ active }: { active: "home" | "menu" | "orders" }) {
+export default function DashNav({
+  active,
+}: {
+  active: "home" | "menu" | "orders" | "reviews";
+}) {
   return (
     <nav className="flex flex-wrap items-center gap-2 border-b pb-3">
       <Link href="/" className="mr-2 text-orange-600">

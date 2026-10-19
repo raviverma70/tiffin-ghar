@@ -11,7 +11,20 @@ const publicProviderSelect = {
   shopName: true,
   city: true,
   pincode: true,
+  photoUrl: true,
+  ratingSum: true,
+  ratingCount: true,
 };
+
+// ratingSum bahar nahi bhejte, average (ek decimal tak) bhejte hain
+function withRating<T extends { ratingSum: number; ratingCount: number }>(p: T) {
+  const { ratingSum, ratingCount, ...rest } = p;
+  return {
+    ...rest,
+    ratingCount,
+    rating: ratingCount > 0 ? Math.round((ratingSum / ratingCount) * 10) / 10 : null,
+  };
+}
 
 // Approved aur khule providers ki list
 router.get("/", publicLimiter, async (req, res, next) => {
@@ -40,7 +53,7 @@ router.get("/", publicLimiter, async (req, res, next) => {
       prisma.provider.count({ where }),
     ]);
 
-    res.json({ items, total, page, limit });
+    res.json({ items: items.map(withRating), total, page, limit });
   } catch (e) {
     next(e);
   }
@@ -77,11 +90,12 @@ router.get("/:id/menu", publicLimiter, async (req, res, next) => {
         pricePaise: true,
         isVeg: true,
         dayOfWeek: true,
+        photoUrl: true,
       },
       orderBy: { id: "asc" },
     });
 
-    res.json({ provider, day: today, items });
+    res.json({ provider: withRating(provider), day: today, items });
   } catch (e) {
     next(e);
   }

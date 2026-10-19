@@ -5,6 +5,9 @@ export type Provider = {
   shopName: string;
   city: string;
   pincode: string;
+    photoUrl: string | null;
+  rating: number | null;
+  ratingCount: number;
 };
 
 export type MenuItem = {
@@ -14,6 +17,7 @@ export type MenuItem = {
   pricePaise: number;
   isVeg: boolean;
   dayOfWeek: number | null;
+    photoUrl: string | null;
 };
 
 export type TodayMenu = {

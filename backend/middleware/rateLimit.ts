@@ -15,3 +15,4 @@ export const verifyOtpLimiter = make(15 * 60_000, 20, "Bahut zyada koshish, 15 m
 export const refreshLimiter = make(15 * 60_000, 30, "Bahut zyada koshish, 15 minute baad try karo");
 export const publicLimiter = make(60_000, 60, "Bahut zyada requests, thoda ruko");
 export const orderLimiter = make(15 * 60_000, 20, "Bahut zyada orders, thodi der baad try karo");
+export const reviewLimiter = make(15 * 60_000, 20, "Bahut zyada reviews, thodi der baad try karo");

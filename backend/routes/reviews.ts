@@ -1,0 +1,129 @@
+import { Router } from "express";
+import type { z } from "zod";
+import { prisma } from "../lib/prisma.js";
+import { validate } from "../middleware/validate.js";
+import { requireAuth, type AuthedRequest } from "../middleware/auth.js";
+import { publicLimiter, reviewLimiter } from "../middleware/rateLimit.js";
+import { createReviewSchema, listReviewsQuery } from "../validators/review.js";
+
+const router = Router();
+
+function parseId(value: unknown) {
+  const id = Number(String(value));
+  return Number.isInteger(id) && id >= 1 && id <= 2_147_483_647 ? id : null;
+}
+
+// 9999999999 -> 99xxxxxx99
+function maskPhone(phone: string) {
+  return `${phone.slice(0, 2)}xxxxxx${phone.slice(-2)}`;
+}
+
+// Customer apne DELIVERED order par review de (ek order par ek hi)
+router.post(
+  "/orders/:id/review",
+  requireAuth,
+  reviewLimiter,
+  validate(createReviewSchema),
+  async (req: AuthedRequest, res, next) => {
+    try {
+      const id = parseId(req.params.id);
+      if (!id) return res.status(404).json({ error: "Order nahi mila" });
+
+      const { rating, comment } = req.body as z.infer<typeof createReviewSchema>;
+      const userId = req.auth!.userId;
+
+      // Kisi aur ka order ho to wahi "nahi mila" (pata na chale ki wo maujood hai)
+      const order = await prisma.order.findFirst({
+        where: { id, userId },
+        select: { id: true, providerId: true, status: true },
+      });
+      if (!order) return res.status(404).json({ error: "Order nahi mila" });
+      if (order.status !== "DELIVERED") {
+        return res.status(409).json({ error: "Review sirf pahunche hue order par de sakte ho" });
+      }
+
+      try {
+        // Review aur dukaan ki rating ka jod ek saath: dono hon ya dono nahi
+        const [review] = await prisma.$transaction([
+          prisma.review.create({
+            data: { orderId: id, userId, providerId: order.providerId, rating, comment: comment || null },
+            select: { id: true, rating: true, comment: true, createdAt: true },
+          }),
+          prisma.provider.update({
+            where: { id: order.providerId },
+            data: { ratingSum: { increment: rating }, ratingCount: { increment: 1 } },
+          }),
+        ]);
+        return res.status(201).json(review);
+      } catch (e) {
+        // orderId unique hai: dobara review dene par
+        if ((e as { code?: string }).code === "P2002") {
+          return res.status(409).json({ error: "Is order ka review pehle hi ho chuka hai" });
+        }
+        throw e;
+      }
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+// Dukaan ke reviews (sab ke liye, dukaan band ho tab bhi)
+router.get("/providers/:id/reviews", publicLimiter, async (req, res, next) => {
+  try {
+    const id = parseId(req.params.id);
+    if (!id) return res.status(400).json({ error: "Galat provider id" });
+
+    const parsed = listReviewsQuery.safeParse(req.query);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.issues[0]?.message ?? "Galat input" });
+    }
+    const { page, limit } = parsed.data;
+
+    const provider = await prisma.provider.findFirst({
+      where: { id, status: "APPROVED" },
+      select: { id: true, shopName: true, ratingSum: true, ratingCount: true },
+    });
+    if (!provider) return res.status(404).json({ error: "Dukaan nahi mili" });
+
+    const reviews = await prisma.review.findMany({
+      where: { providerId: id },
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        createdAt: true,
+        user: { select: { phone: true } },
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    res.json({
+      provider: {
+        id: provider.id,
+        shopName: provider.shopName,
+        rating:
+          provider.ratingCount > 0
+            ? Math.round((provider.ratingSum / provider.ratingCount) * 10) / 10
+            : null,
+        ratingCount: provider.ratingCount,
+      },
+      items: reviews.map((r) => ({
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment,
+        createdAt: r.createdAt,
+        customer: maskPhone(r.user.phone),
+      })),
+      total: provider.ratingCount,
+      page,
+      limit,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+export default router;

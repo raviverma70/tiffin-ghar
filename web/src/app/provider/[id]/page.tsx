@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getMenu } from "@/lib/api";
 import { getCurrentUser } from "@/lib/session";
 import OrderForm from "./order-form";
+import { RatingLine } from "@/components/stars";
 
 const DAY_NAMES = [
   "Ravivar",
@@ -55,6 +56,12 @@ export default async function ProviderPage({
       <p className="text-gray-600">
         {provider.city} - {provider.pincode}
       </p>
+            <div className="mt-1 flex flex-wrap items-center gap-3">
+        <RatingLine rating={provider.rating} count={provider.ratingCount} />
+        <Link href={`/provider/${provider.id}/reviews`} className="text-sm text-orange-600">
+          Reviews dekho
+        </Link>
+      </div>
 
       <h2 className="mt-6 text-xl font-semibold">Aaj ka menu ({DAY_NAMES[day]})</h2>
 

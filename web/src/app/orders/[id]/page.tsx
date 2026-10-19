@@ -4,6 +4,8 @@ import { formatDate, formatPrice } from "@/lib/format";
 import { STATUS_LABEL, type Order } from "@/lib/orders";
 import { cancelOrderAction } from "../actions";
 import AutoRefresh from "@/components/auto-refresh";
+import ReviewForm from "./review-form";
+import { Stars } from "@/components/stars";
 
 export default async function OrderPage({
   params,
@@ -86,6 +88,26 @@ export default async function OrderPage({
             Order cancel karo
           </button>
         </form>
+      )}
+            {order.status === "DELIVERED" && (
+        <div className="mt-8 rounded border p-4">
+          {order.review ? (
+            <>
+              <p className="font-semibold">Aapka review</p>
+              <p className="mt-1">
+                <Stars value={order.review.rating} />
+              </p>
+              {order.review.comment && (
+                <p className="mt-1 text-sm text-gray-600">{order.review.comment}</p>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="font-semibold">Khana kaisa laga?</p>
+              <ReviewForm orderId={order.id} />
+            </>
+          )}
+        </div>
       )}
     </main>
   );
