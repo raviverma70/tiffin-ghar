@@ -27,6 +27,7 @@ model User {
       provider      Provider?
         orders Order[]
           reviews       Review[]
+            language      String?
 }
 
 model Otp {

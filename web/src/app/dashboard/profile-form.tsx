@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { createProfileAction, updateProfileAction, type FormState } from "./actions";
+import { useT } from "@/i18n/client";
 
 type Profile = {
   shopName: string;
@@ -12,7 +13,7 @@ type Profile = {
 };
 
 const initial: FormState = { error: "" };
-const field = "mt-1 w-full rounded border px-3 py-2";
+const field = "mt-1 w-full rounded border bg-white px-3 py-2";
 
 export default function ProfileForm({
   mode,
@@ -21,6 +22,7 @@ export default function ProfileForm({
   mode: "create" | "edit";
   profile?: Profile;
 }) {
+  const t = useT();
   const [state, action, pending] = useActionState(
     mode === "create" ? createProfileAction : updateProfileAction,
     initial,
@@ -34,7 +36,7 @@ export default function ProfileForm({
   return (
     <form action={action} className="space-y-3">
       <label className="block text-sm">
-        Dukaan ka naam
+        {t("pf.shopName")}
         <input
           name="shopName"
           value={shopName}
@@ -46,7 +48,7 @@ export default function ProfileForm({
       </label>
 
       <label className="block text-sm">
-        Shehar
+        {t("pf.city")}
         <input
           name="city"
           value={city}
@@ -58,7 +60,7 @@ export default function ProfileForm({
       </label>
 
       <label className="block text-sm">
-        Poora pata
+        {t("pf.address")}
         <textarea
           name="address"
           value={address}
@@ -72,7 +74,7 @@ export default function ProfileForm({
       </label>
 
       <label className="block text-sm">
-        Pincode (6 digit)
+        {t("pf.pincode")}
         <input
           name="pincode"
           value={pincode}
@@ -86,7 +88,7 @@ export default function ProfileForm({
       </label>
 
       <label className="block text-sm">
-        FSSAI number (14 digit, abhi nahi hai to khali chhodo)
+        {t("pf.fssai")}
         <input
           name="fssaiNumber"
           value={fssai}
@@ -99,10 +101,10 @@ export default function ProfileForm({
       </label>
 
       {state.error && <p className="text-red-600">{state.error}</p>}
-      {state.saved && !state.error && <p className="text-green-600">Save ho gaya.</p>}
+      {state.saved && !state.error && <p className="text-green-600">{t("pf.saved")}</p>}
 
       <button disabled={pending} className="rounded bg-orange-600 px-4 py-2 text-white disabled:opacity-50">
-        {pending ? "Ruko..." : mode === "create" ? "Dukaan ki profile banao" : "Save karo"}
+        {pending ? t("common.loading") : mode === "create" ? t("pf.create") : t("common.save")}
       </button>
     </form>
   );

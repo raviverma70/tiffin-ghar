@@ -1,3 +1,5 @@
+import type { MessageKey } from "@/i18n/messages/hinglish";
+
 export type OrderStatus =
   | "PLACED"
   | "ACCEPTED"
@@ -7,14 +9,15 @@ export type OrderStatus =
   | "REJECTED"
   | "CANCELLED";
 
-export const STATUS_LABEL: Record<OrderStatus, string> = {
-  PLACED: "Order mil gaya, dukaan ke jawab ka intezaar",
-  ACCEPTED: "Dukaan ne accept kar liya",
-  PREPARING: "Ban raha hai",
-  OUT_FOR_DELIVERY: "Raaste me hai",
-  DELIVERED: "Pahunch gaya",
-  REJECTED: "Dukaan ne mana kar diya",
-  CANCELLED: "Cancel ho gaya",
+// Customer ko status ka text (bhasha ki key): t(STATUS_KEY[order.status])
+export const STATUS_KEY: Record<OrderStatus, MessageKey> = {
+  PLACED: "status.PLACED",
+  ACCEPTED: "status.ACCEPTED",
+  PREPARING: "status.PREPARING",
+  OUT_FOR_DELIVERY: "status.OUT_FOR_DELIVERY",
+  DELIVERED: "status.DELIVERED",
+  REJECTED: "status.REJECTED",
+  CANCELLED: "status.CANCELLED",
 };
 
 export type OrderItem = {
@@ -34,5 +37,5 @@ export type Order = {
   createdAt: string;
   provider: { id: number; shopName: string };
   items: OrderItem[];
-    review: { rating: number; comment: string | null } | null;
+  review: { rating: number; comment: string | null } | null;
 };

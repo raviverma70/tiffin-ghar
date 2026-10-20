@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { authedFetch } from "@/lib/authed";
+import { apiError } from "@/i18n/server";
 
 export type ReviewState = { error: string };
 
@@ -34,10 +35,7 @@ export async function submitReviewAction(_prev: ReviewState, fd: FormData): Prom
     body: { rating, comment: comment || undefined },
   });
 
-  if (!res.ok) {
-    const data = await res.json().catch(() => null);
-    return { error: (data?.error as string | undefined) ?? "Kuch gadbad hui, baad me try karo" };
-  }
+  if (!res.ok) return { error: await apiError(res) };
 
   revalidatePath(`/orders/${id}`);
   redirect(`/orders/${id}`);

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession, safeNext } from "@/lib/session";
+import { getT } from "@/i18n/server";
 import LoginForm from "./LoginForm";
 
 export default async function LoginPage({
@@ -10,6 +11,7 @@ export default async function LoginPage({
 }) {
   const { next, as } = await searchParams;
   const nextPath = safeNext(next);
+  const { t } = await getT();
 
   // Tab: ?as= se, nahi to next dekhkar tay karo
   const role: "customer" | "provider" =
@@ -40,23 +42,21 @@ export default async function LoginPage({
   return (
     <main className="mx-auto max-w-md p-6">
       <Link href="/" className="text-orange-600">
-        &larr; Wapas
+        &larr; {t("nav.back")}
       </Link>
-      <h1 className="mt-4 text-3xl font-bold">Login</h1>
+      <h1 className="mt-4 text-3xl font-bold">{t("login.title")}</h1>
 
       <div className="mt-4 flex gap-2">
         <Link href={`/login?as=customer${keep}`} className={tab("customer")}>
-          Customer
+          {t("login.tabCustomer")}
         </Link>
         <Link href={`/login?as=provider${keep}`} className={tab("provider")}>
-          Provider
+          {t("login.tabProvider")}
         </Link>
       </div>
 
       <p className="mt-4 text-gray-600">
-        {role === "provider"
-          ? "Apni tiffin dukaan sambhalne ke liye login karo. Pehli baar ho to login ke baad dukaan ki profile bharni hogi."
-          : "Tiffin order karne ke liye apne mobile number se login karo, OTP aayega."}
+        {role === "provider" ? t("login.introProvider") : t("login.introCustomer")}
       </p>
 
       <LoginForm key={role} next={target} />

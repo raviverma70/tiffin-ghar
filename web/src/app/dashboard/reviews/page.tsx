@@ -3,6 +3,7 @@ import { providerFetch, requireProviderUser } from "@/lib/provider-api";
 import type { ProviderProfile } from "@/lib/provider";
 import { getReviews } from "@/lib/reviews";
 import { formatDate } from "@/lib/format";
+import { getT } from "@/i18n/server";
 import DashNav from "@/components/dash-nav";
 import { RatingLine, Stars } from "@/components/stars";
 
@@ -16,6 +17,7 @@ export default async function DashboardReviewsPage({
   const { page: pageParam } = await searchParams;
   const page = Math.max(1, Number.parseInt(pageParam ?? "1", 10) || 1);
   const here = page > 1 ? `/dashboard/reviews?page=${page}` : "/dashboard/reviews";
+  const { t, locale } = await getT();
 
   await requireProviderUser(here);
 
@@ -27,13 +29,9 @@ export default async function DashboardReviewsPage({
     <main className="mx-auto max-w-2xl p-6">
       <DashNav active="reviews" />
 
-      <h1 className="mt-6 text-2xl font-bold">Reviews</h1>
+      <h1 className="mt-6 text-2xl font-bold">{t("reviews.title")}</h1>
 
-      {!data && (
-        <p className="mt-4 text-gray-600">
-          Dukaan approve hone ke baad customers ke reviews yahan dikhenge.
-        </p>
-      )}
+      {!data && <p className="mt-4 text-gray-600">{t("dreviews.pending")}</p>}
 
       {data && (
         <>
@@ -41,19 +39,19 @@ export default async function DashboardReviewsPage({
             <RatingLine rating={data.provider.rating} count={data.provider.ratingCount} />
           </p>
 
-          {data.items.length === 0 && (
-            <p className="mt-6 text-gray-600">Abhi koi review nahi aaya.</p>
-          )}
+          {data.items.length === 0 && <p className="mt-6 text-gray-600">{t("dreviews.none")}</p>}
 
           <ul className="mt-6 space-y-3">
             {data.items.map((r) => (
-              <li key={r.id} className="rounded border p-4">
+              <li key={r.id} className="rounded-xl border bg-white p-4">
                 <div className="flex items-center justify-between gap-4">
                   <Stars value={r.rating} />
-                  <span className="text-xs text-gray-500">{formatDate(r.createdAt)}</span>
+                  <span className="text-xs text-gray-500">{formatDate(r.createdAt, locale)}</span>
                 </div>
                 {r.comment && <p className="mt-2">{r.comment}</p>}
-                <p className="mt-2 text-xs text-gray-500">Customer {r.customer}</p>
+                <p className="mt-2 text-xs text-gray-500">
+                  {t("reviews.customer", { name: r.customer })}
+                </p>
               </li>
             ))}
           </ul>
@@ -61,14 +59,14 @@ export default async function DashboardReviewsPage({
           <div className="mt-6 flex justify-between">
             {page > 1 ? (
               <Link href={`/dashboard/reviews?page=${page - 1}`} className="text-orange-600">
-                &larr; Naye reviews
+                &larr; {t("reviews.newer")}
               </Link>
             ) : (
               <span />
             )}
             {data.total > page * LIMIT && (
               <Link href={`/dashboard/reviews?page=${page + 1}`} className="text-orange-600">
-                Aur purane &rarr;
+                {t("reviews.older")} &rarr;
               </Link>
             )}
           </div>

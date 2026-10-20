@@ -14,6 +14,7 @@ import adminRouter from "./routes/admin.js";
 import reviewsRouter from "./routes/reviews.js";
 import photosRouter from "./routes/photos.js";
 import { UPLOAD_DIR } from "./lib/uploads.js";
+import meRouter from "./routes/me.js";
 
 export const app = express();
 
@@ -37,6 +38,7 @@ api.use("/orders", ordersRouter);
 api.use("/admin", adminRouter);
 api.use(reviewsRouter);
 api.use("/providers", photosRouter);
+api.use("/me", meRouter);
 api.get("/me", requireAuth, async (req: AuthedRequest, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.auth!.userId } });

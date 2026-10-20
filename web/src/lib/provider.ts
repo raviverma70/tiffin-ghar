@@ -1,3 +1,4 @@
+import type { MessageKey } from "@/i18n/messages/hinglish";
 import type { OrderItem, OrderStatus } from "@/lib/orders";
 
 export type ProviderProfile = {
@@ -9,7 +10,7 @@ export type ProviderProfile = {
   fssaiNumber: string | null;
   status: "PENDING" | "APPROVED" | "REJECTED";
   isOpen: boolean;
-    photoUrl: string | null;
+  photoUrl: string | null;
 };
 
 export type DashMenuItem = {
@@ -20,7 +21,7 @@ export type DashMenuItem = {
   dayOfWeek: number | null;
   isVeg: boolean;
   isAvailable: boolean;
-    photoUrl: string | null;
+  photoUrl: string | null;
 };
 
 export type ProviderOrder = {
@@ -35,25 +36,26 @@ export type ProviderOrder = {
   user: { phone: string };
 };
 
-export const DAY_NAMES = [
-  "Ravivar",
-  "Somvar",
-  "Mangalvar",
-  "Budhvar",
-  "Guruvar",
-  "Shukravar",
-  "Shanivar",
+// 0 = Ravivar ... 6 = Shanivar (bhasha ki keys)
+export const DAY_KEYS: MessageKey[] = [
+  "day.0",
+  "day.1",
+  "day.2",
+  "day.3",
+  "day.4",
+  "day.5",
+  "day.6",
 ];
 
-// Provider ko status aise dikhte hain (customer wale label se alag)
-export const PROVIDER_STATUS_LABEL: Record<OrderStatus, string> = {
-  PLACED: "Naya order",
-  ACCEPTED: "Accept kiya",
-  PREPARING: "Ban raha hai",
-  OUT_FOR_DELIVERY: "Raaste me hai",
-  DELIVERED: "Pahunch gaya",
-  REJECTED: "Mana kiya",
-  CANCELLED: "Customer ne cancel kiya",
+// Provider ko status aise dikhte hain
+export const PROVIDER_STATUS_KEY: Record<OrderStatus, MessageKey> = {
+  PLACED: "pstatus.PLACED",
+  ACCEPTED: "pstatus.ACCEPTED",
+  PREPARING: "pstatus.PREPARING",
+  OUT_FOR_DELIVERY: "pstatus.OUT_FOR_DELIVERY",
+  DELIVERED: "pstatus.DELIVERED",
+  REJECTED: "pstatus.REJECTED",
+  CANCELLED: "pstatus.CANCELLED",
 };
 
 export type NextStatus = "ACCEPTED" | "REJECTED" | "PREPARING" | "OUT_FOR_DELIVERY" | "DELIVERED";
@@ -66,23 +68,23 @@ export const NEXT_STATUSES: Partial<Record<OrderStatus, NextStatus[]>> = {
   OUT_FOR_DELIVERY: ["DELIVERED"],
 };
 
-export const ACTION_LABEL: Record<NextStatus, string> = {
-  ACCEPTED: "Accept karo",
-  REJECTED: "Mana karo",
-  PREPARING: "Ban raha hai",
-  OUT_FOR_DELIVERY: "Raaste me hai",
-  DELIVERED: "Pahunch gaya",
+export const ACTION_KEY: Record<NextStatus, MessageKey> = {
+  ACCEPTED: "action.ACCEPTED",
+  REJECTED: "action.REJECTED",
+  PREPARING: "action.PREPARING",
+  OUT_FOR_DELIVERY: "action.OUT_FOR_DELIVERY",
+  DELIVERED: "action.DELIVERED",
 };
 
-export const FILTERS: { value: OrderStatus | ""; label: string }[] = [
-  { value: "", label: "Sab" },
-  { value: "PLACED", label: "Naye" },
-  { value: "ACCEPTED", label: "Accept kiye" },
-  { value: "PREPARING", label: "Ban raha hai" },
-  { value: "OUT_FOR_DELIVERY", label: "Raaste me" },
-  { value: "DELIVERED", label: "Pahunch gaye" },
-  { value: "REJECTED", label: "Mana kiye" },
-  { value: "CANCELLED", label: "Cancel" },
+export const FILTERS: { value: OrderStatus | ""; key: MessageKey }[] = [
+  { value: "", key: "filter.all" },
+  { value: "PLACED", key: "filter.PLACED" },
+  { value: "ACCEPTED", key: "filter.ACCEPTED" },
+  { value: "PREPARING", key: "filter.PREPARING" },
+  { value: "OUT_FOR_DELIVERY", key: "filter.OUT_FOR_DELIVERY" },
+  { value: "DELIVERED", key: "filter.DELIVERED" },
+  { value: "REJECTED", key: "filter.REJECTED" },
+  { value: "CANCELLED", key: "filter.CANCELLED" },
 ];
 
 // "85" ya "85.50" (rupaye) -> 8500 ya 8550 (paise). Galat likha ho to null.

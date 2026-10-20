@@ -3,6 +3,7 @@
 import { useActionState, useRef, useState, useTransition, type ChangeEvent } from "react";
 import { removePhotoAction, uploadPhotoAction, type PhotoState } from "@/app/dashboard/actions";
 import Thumb from "@/components/thumb";
+import { useT } from "@/i18n/client";
 
 const initial: PhotoState = { error: "" };
 const MAX_BYTES = 850_000;
@@ -40,6 +41,7 @@ export default function PhotoUploader({
   itemId?: number;
   src: string | null;
 }) {
+  const t = useT();
   const [upState, upload, uploading] = useActionState(uploadPhotoAction, initial);
   const [rmState, remove, removing] = useActionState(removePhotoAction, initial);
   const [localError, setLocalError] = useState("");
@@ -53,7 +55,7 @@ export default function PhotoUploader({
 
     setLocalError("");
     if (!file.type.startsWith("image/")) {
-      setLocalError("Sirf photo chuno");
+      setLocalError(t("err.photoOnly"));
       return;
     }
 
@@ -65,7 +67,7 @@ export default function PhotoUploader({
       fd.set("file", new File([blob], "photo.jpg", { type: "image/jpeg" }));
       startTransition(() => upload(fd));
     } catch {
-      setLocalError("Ye photo nahi khul payi. JPG ya PNG try karo.");
+      setLocalError(t("err.photoOpen"));
     }
   }
 
@@ -73,7 +75,7 @@ export default function PhotoUploader({
 
   return (
     <div className="flex items-center gap-3">
-      <Thumb src={src} alt="Photo" className="h-20 w-20 shrink-0 rounded-lg" />
+      <Thumb src={src} alt={t("photo.alt")} className="h-20 w-20 shrink-0 rounded-lg" />
 
       <div className="space-y-2">
         <div className="flex flex-wrap gap-2">
@@ -83,7 +85,7 @@ export default function PhotoUploader({
             disabled={uploading || removing}
             className="rounded border px-3 py-1 text-sm hover:bg-orange-50 disabled:opacity-50"
           >
-            {uploading ? "Upload ho rahi hai..." : src ? "Photo badlo" : "Photo lagao"}
+            {uploading ? t("photo.uploading") : src ? t("photo.change") : t("photo.add")}
           </button>
 
           {src && (
@@ -94,7 +96,7 @@ export default function PhotoUploader({
                 disabled={uploading || removing}
                 className="rounded border border-red-600 px-3 py-1 text-sm text-red-600 disabled:opacity-50"
               >
-                {removing ? "Ruko..." : "Hatao"}
+                {removing ? t("common.loading") : t("common.remove")}
               </button>
             </form>
           )}

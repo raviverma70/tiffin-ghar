@@ -2,65 +2,75 @@
 
 import { useActionState } from "react";
 import { loginAction, type LoginState } from "./actions";
+import { useT } from "@/i18n/client";
 
-const initialState: LoginState = { step: "phone", phone: "", error: "" };
+const initial: LoginState = { step: "phone", phone: "", error: "" };
+const field = "mt-1 w-full rounded-lg border bg-white px-3 py-2";
 
 export default function LoginForm({ next }: { next: string }) {
-  const [state, formAction, pending] = useActionState(loginAction, initialState);
+  const t = useT();
+  const [state, action, pending] = useActionState(loginAction, initial);
 
   return (
-    <form action={formAction} className="mt-6 space-y-4">
+    <form action={action} className="mt-6 space-y-3">
       <input type="hidden" name="next" value={next} />
 
       {state.step === "phone" ? (
         <>
-          <input
-            name="phone"
-            type="tel"
-            inputMode="numeric"
-            autoComplete="tel"
-            maxLength={10}
-            defaultValue={state.phone}
-            placeholder="10 digit ka mobile number"
-            required
-            className="w-full rounded border px-3 py-2"
-          />
+          <label className="block text-sm">
+            {t("login.phone")}
+            <input
+              name="phone"
+              defaultValue={state.phone}
+              required
+              inputMode="numeric"
+              autoComplete="tel"
+              pattern="\d{10}"
+              maxLength={10}
+              className={field}
+            />
+          </label>
+
           <button
             disabled={pending}
-            className="rounded bg-orange-600 px-4 py-2 text-white disabled:opacity-60"
+            className="w-full rounded-lg bg-orange-600 px-4 py-2.5 font-medium text-white hover:bg-orange-700 disabled:opacity-60"
           >
-            {pending ? "Bhej rahe hain..." : "OTP bhejo"}
+            {pending ? t("common.loading") : t("login.sendOtp")}
           </button>
         </>
       ) : (
         <>
-          <p className="text-sm text-gray-600">OTP {state.phone} par bheja gaya hai.</p>
-          <input
-            name="code"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={6}
-            placeholder="6 digit ka OTP"
-            required
-            className="w-full rounded border px-3 py-2"
-          />
-          <div className="flex items-center gap-4">
-            <button
-              disabled={pending}
-              className="rounded bg-orange-600 px-4 py-2 text-white disabled:opacity-60"
-            >
-              {pending ? "Check kar rahe hain..." : "Login karo"}
-            </button>
-            <button
-              type="submit"
-              name="intent"
-              value="back"
-              formNoValidate
-              className="text-sm text-orange-600"
-            >
-              Number badlo / OTP dobara maango
-            </button>
-          </div>
+          <p className="text-sm text-gray-600">{t("login.otpFor", { phone: state.phone })}</p>
+
+          <label className="block text-sm">
+            {t("login.otp")}
+            <input
+              name="code"
+              required
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="\d{6}"
+              maxLength={6}
+              className={field}
+            />
+          </label>
+
+          <button
+            disabled={pending}
+            className="w-full rounded-lg bg-orange-600 px-4 py-2.5 font-medium text-white hover:bg-orange-700 disabled:opacity-60"
+          >
+            {pending ? t("common.loading") : t("login.verify")}
+          </button>
+
+          <button
+            name="intent"
+            value="back"
+            formNoValidate
+            disabled={pending}
+            className="w-full rounded-lg border px-4 py-2.5 hover:bg-orange-50"
+          >
+            {t("login.changeNumber")}
+          </button>
         </>
       )}
 

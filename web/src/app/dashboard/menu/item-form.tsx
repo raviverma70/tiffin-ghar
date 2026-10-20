@@ -2,12 +2,14 @@
 
 import { useActionState, useState } from "react";
 import { createMenuItemAction, updateMenuItemAction, type FormState } from "../actions";
-import { DAY_NAMES, paiseToRupees, type DashMenuItem } from "@/lib/provider";
+import { DAY_KEYS, paiseToRupees, type DashMenuItem } from "@/lib/provider";
+import { useT } from "@/i18n/client";
 
 const initial: FormState = { error: "" };
-const field = "mt-1 w-full rounded border px-3 py-2";
+const field = "mt-1 w-full rounded border bg-white px-3 py-2";
 
 export default function ItemForm({ item }: { item?: DashMenuItem }) {
+  const t = useT();
   const editing = Boolean(item);
   const [state, action, pending] = useActionState(
     editing ? updateMenuItemAction : createMenuItemAction,
@@ -22,11 +24,11 @@ export default function ItemForm({ item }: { item?: DashMenuItem }) {
   const [isAvailable, setIsAvailable] = useState(item?.isAvailable ?? true);
 
   return (
-    <form action={action} className="space-y-3 rounded border p-4">
+    <form action={action} className="space-y-3 rounded-xl border bg-white p-4">
       {item && <input type="hidden" name="id" value={item.id} />}
 
       <label className="block text-sm">
-        Dish ka naam
+        {t("item.name")}
         <input
           name="name"
           value={name}
@@ -39,7 +41,7 @@ export default function ItemForm({ item }: { item?: DashMenuItem }) {
       </label>
 
       <label className="block text-sm">
-        Kya-kya hai (optional)
+        {t("item.desc")}
         <textarea
           name="description"
           value={description}
@@ -51,7 +53,7 @@ export default function ItemForm({ item }: { item?: DashMenuItem }) {
       </label>
 
       <label className="block text-sm">
-        Daam (rupaye me, jaise 85 ya 85.50)
+        {t("item.price")}
         <input
           name="price"
           value={price}
@@ -63,12 +65,12 @@ export default function ItemForm({ item }: { item?: DashMenuItem }) {
       </label>
 
       <label className="block text-sm">
-        Kis din
+        {t("item.day")}
         <select name="dayOfWeek" value={day} onChange={(e) => setDay(e.target.value)} className={field}>
-          <option value="">Har din</option>
-          {DAY_NAMES.map((d, i) => (
-            <option key={d} value={i}>
-              {d}
+          <option value="">{t("menu.everyDay")}</option>
+          {DAY_KEYS.map((key, i) => (
+            <option key={key} value={i}>
+              {t(key)}
             </option>
           ))}
         </select>
@@ -81,7 +83,7 @@ export default function ItemForm({ item }: { item?: DashMenuItem }) {
           checked={isVeg}
           onChange={(e) => setIsVeg(e.target.checked)}
         />
-        Veg hai
+        {t("item.veg")}
       </label>
 
       <label className="flex items-center gap-2 text-sm">
@@ -91,13 +93,13 @@ export default function ItemForm({ item }: { item?: DashMenuItem }) {
           checked={isAvailable}
           onChange={(e) => setIsAvailable(e.target.checked)}
         />
-        Chalu hai (customers ko dikhe)
+        {t("item.available")}
       </label>
 
       {state.error && <p className="text-red-600">{state.error}</p>}
 
       <button disabled={pending} className="rounded bg-orange-600 px-4 py-2 text-white disabled:opacity-50">
-        {pending ? "Ruko..." : editing ? "Save karo" : "Item jodo"}
+        {pending ? t("common.loading") : editing ? t("common.save") : t("item.add")}
       </button>
     </form>
   );

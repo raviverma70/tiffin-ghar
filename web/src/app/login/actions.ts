@@ -3,6 +3,9 @@
 import { redirect } from "next/navigation";
 import { API_URL } from "@/lib/api";
 import { clearSession, getRefreshToken, safeNext, setSession } from "@/lib/session";
+import { translateError } from "@/i18n/errors";
+import { getT } from "@/i18n/server";
+import { syncLanguageAfterLogin } from "@/i18n/sync";
 
 export type LoginState = {
   step: "phone" | "otp";
@@ -35,6 +38,8 @@ export async function loginAction(
   prev: LoginState,
   formData: FormData,
 ): Promise<LoginState> {
+  const { t } = await getT();
+
   // "Number badlo" button
   if (formData.get("intent") === "back") {
     return { step: "phone", phone: prev.phone, error: "" };
@@ -44,7 +49,7 @@ export async function loginAction(
   if (prev.step === "phone") {
     const phone = String(formData.get("phone") ?? "").trim();
     const result = await callApi<unknown>("/auth/send-otp", { phone });
-    if (!result.ok) return { step: "phone", phone, error: result.error };
+    if (!result.ok) return { step: "phone", phone, error: translateError(t, result.error) };
     return { step: "otp", phone, error: "" };
   }
 
@@ -56,9 +61,12 @@ export async function loginAction(
     phone: prev.phone,
     code,
   });
-  if (!result.ok) return { step: "otp", phone: prev.phone, error: result.error };
+  if (!result.ok) {
+    return { step: "otp", phone: prev.phone, error: translateError(t, result.error) };
+  }
 
   await setSession(result.data.accessToken, result.data.refreshToken);
+  await syncLanguageAfterLogin(result.data.accessToken);
   redirect(next); // redirect try/catch ke bahar hi rakhna
 }
 

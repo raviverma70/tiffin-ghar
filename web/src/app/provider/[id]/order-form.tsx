@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import { placeOrderAction, type OrderState } from "./actions";
 import { formatPrice } from "@/lib/format";
+import { useT } from "@/i18n/client";
 import Thumb from "@/components/thumb";
 
 type Item = {
@@ -27,6 +28,7 @@ export default function OrderForm({
   items: Item[];
   loggedIn: boolean;
 }) {
+  const t = useT();
   const [qty, setQty] = useState<Record<number, number>>({});
   const [address, setAddress] = useState("");
   const [note, setNote] = useState("");
@@ -56,7 +58,7 @@ export default function OrderForm({
                 <p className="font-semibold">
                   <span
                     className={item.isVeg ? "text-green-600" : "text-red-600"}
-                    title={item.isVeg ? "Veg" : "Non-veg"}
+                    title={item.isVeg ? t("of.veg") : t("of.nonveg")}
                   >
                     &#9679;
                   </span>{" "}
@@ -74,7 +76,7 @@ export default function OrderForm({
                     type="button"
                     onClick={() => change(item.id, -1)}
                     className="h-8 w-8 rounded-full border hover:bg-orange-50"
-                    aria-label="Kam karo"
+                    aria-label={t("of.less")}
                   >
                     -
                   </button>
@@ -83,7 +85,7 @@ export default function OrderForm({
                     type="button"
                     onClick={() => change(item.id, 1)}
                     className="h-8 w-8 rounded-full bg-orange-600 text-white hover:bg-orange-700"
-                    aria-label="Badhao"
+                    aria-label={t("of.more")}
                   >
                     +
                   </button>
@@ -96,11 +98,13 @@ export default function OrderForm({
 
       {!loggedIn && (
         <p className="mt-6 rounded-xl border bg-white p-4">
-          Order dene ke liye pehle{" "}
-          <Link href={`/login?next=${encodeURIComponent(`/provider/${providerId}`)}`} className="text-orange-600">
-            login karo
+          {t("of.loginFirst")}{" "}
+          <Link
+            href={`/login?next=${encodeURIComponent(`/provider/${providerId}`)}`}
+            className="text-orange-600"
+          >
+            {t("of.loginButton")}
           </Link>
-          .
         </p>
       )}
 
@@ -109,12 +113,12 @@ export default function OrderForm({
           <input type="hidden" name="providerId" value={providerId} />
           <input type="hidden" name="items" value={JSON.stringify(lines)} />
 
-          <h3 className="text-lg font-semibold">Aapka order</h3>
+          <h3 className="text-lg font-semibold">{t("of.title")}</h3>
           {lines.length === 0 ? (
-            <p className="text-sm text-gray-600">Upar se items chuno (+ dabao).</p>
+            <p className="text-sm text-gray-600">{t("of.pick")}</p>
           ) : (
             <p className="text-sm text-gray-600">
-              {lines.length} item, total {formatPrice(total)} (payment: COD, delivery par)
+              {t("of.summary", { count: lines.length, total: formatPrice(total) })}
             </p>
           )}
 
@@ -126,7 +130,7 @@ export default function OrderForm({
             minLength={10}
             maxLength={250}
             rows={3}
-            placeholder="Delivery ka poora pata"
+            placeholder={t("of.addrPh")}
             className="w-full rounded-lg border px-3 py-2"
           />
           <input
@@ -134,7 +138,7 @@ export default function OrderForm({
             value={note}
             onChange={(e) => setNote(e.target.value)}
             maxLength={200}
-            placeholder="Dukaan ke liye note (optional)"
+            placeholder={t("of.notePh")}
             className="w-full rounded-lg border px-3 py-2"
           />
 
@@ -142,7 +146,7 @@ export default function OrderForm({
             disabled={pending || lines.length === 0}
             className="w-full rounded-lg bg-orange-600 px-4 py-2.5 font-medium text-white hover:bg-orange-700 disabled:opacity-60"
           >
-            {pending ? "Ruko..." : "Order karo"}
+            {pending ? t("common.loading") : t("of.submit")}
           </button>
 
           {state.error && <p className="text-red-600">{state.error}</p>}

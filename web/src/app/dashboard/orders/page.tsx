@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { providerFetch, requireProviderUser } from "@/lib/provider-api";
 import {
-  ACTION_LABEL,
+  ACTION_KEY,
   FILTERS,
   NEXT_STATUSES,
-  PROVIDER_STATUS_LABEL,
+  PROVIDER_STATUS_KEY,
   type ProviderOrder,
 } from "@/lib/provider";
 import type { OrderStatus } from "@/lib/orders";
 import { formatDate, formatPrice } from "@/lib/format";
+import { getT } from "@/i18n/server";
 import DashNav from "@/components/dash-nav";
 import AutoRefresh from "@/components/auto-refresh";
 import ConfirmButton from "@/components/confirm-button";
@@ -30,6 +31,7 @@ export default async function ProviderOrdersPage({
   searchParams: Promise<{ status?: string; page?: string; notice?: string }>;
 }) {
   const { status: statusParam, page: pageParam, notice } = await searchParams;
+  const { t, locale } = await getT();
 
   const status: OrderStatus | "" = FILTERS.some((f) => f.value !== "" && f.value === statusParam)
     ? (statusParam as OrderStatus)
@@ -53,8 +55,8 @@ export default async function ProviderOrdersPage({
       <AutoRefresh seconds={30} />
       <DashNav active="orders" />
 
-      <h1 className="mt-6 text-2xl font-bold">Orders</h1>
-      <p className="mt-1 text-sm text-gray-600">Ye page har 30 second me apne aap naye orders la leta hai.</p>
+      <h1 className="mt-6 text-2xl font-bold">{t("porders.title")}</h1>
+      <p className="mt-1 text-sm text-gray-600">{t("porders.hint")}</p>
 
       <div className="mt-4 flex flex-wrap gap-2">
         {FILTERS.map((f) => (
@@ -67,42 +69,40 @@ export default async function ProviderOrdersPage({
                 : "rounded border px-3 py-1 text-sm hover:bg-orange-50"
             }
           >
-            {f.label}
+            {t(f.key)}
           </Link>
         ))}
       </div>
 
       {notice && <p className="mt-4 rounded border border-red-600 p-3 text-red-600">{notice}</p>}
-      {!data && <p className="mt-4 text-red-600">Orders nahi la paye, baad me try karo.</p>}
-      {data && data.items.length === 0 && (
-        <p className="mt-4 text-gray-600">Is filter me koi order nahi hai.</p>
-      )}
+      {!data && <p className="mt-4 text-red-600">{t("porders.loadFail")}</p>}
+      {data && data.items.length === 0 && <p className="mt-4 text-gray-600">{t("porders.none")}</p>}
 
       {data && data.items.length > 0 && (
         <ul className="mt-6 space-y-4">
           {data.items.map((o) => {
             const next = NEXT_STATUSES[o.status] ?? [];
             return (
-              <li key={o.id} className="rounded border p-4">
+              <li key={o.id} className="rounded-xl border bg-white p-4 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="font-semibold">Order #{o.id}</p>
-                    <p className="text-sm text-gray-600">{formatDate(o.createdAt)}</p>
+                    <p className="font-semibold">{t("orders.number", { id: o.id })}</p>
+                    <p className="text-sm text-gray-600">{formatDate(o.createdAt, locale)}</p>
                   </div>
                   <p className="rounded border px-2 py-1 text-sm font-semibold">
-                    {PROVIDER_STATUS_LABEL[o.status]}
+                    {t(PROVIDER_STATUS_KEY[o.status])}
                   </p>
                 </div>
 
                 <div className="mt-3 text-sm">
                   <p>
-                    Customer:{" "}
+                    {t("porders.customer")}{" "}
                     <a href={`tel:${o.user.phone}`} className="text-orange-600">
                       {o.user.phone}
                     </a>
                   </p>
-                  <p className="mt-1">Delivery ka pata: {o.deliveryAddress}</p>
-                  {o.note && <p className="mt-1">Note: {o.note}</p>}
+                  <p className="mt-1">{t("porders.address", { address: o.deliveryAddress })}</p>
+                  {o.note && <p className="mt-1">{t("porders.note", { note: o.note })}</p>}
                 </div>
 
                 <ul className="mt-3 space-y-1">
@@ -117,7 +117,7 @@ export default async function ProviderOrdersPage({
                 </ul>
 
                 <p className="mt-3 flex justify-between border-t pt-2 font-semibold">
-                  <span>Total (COD, customer se cash lena)</span>
+                  <span>{t("porders.total")}</span>
                   <span>{formatPrice(o.totalPaise)}</span>
                 </p>
 
@@ -129,14 +129,14 @@ export default async function ProviderOrdersPage({
                         <input type="hidden" name="status" value={s} />
                         <input type="hidden" name="back" value={here} />
                         <ConfirmButton
-                          message={s === "REJECTED" ? "Ye order mana karna hai?" : undefined}
+                          message={s === "REJECTED" ? t("porders.confirmReject") : undefined}
                           className={
                             s === "REJECTED"
                               ? "rounded border border-red-600 px-3 py-2 text-sm text-red-600"
                               : "rounded bg-orange-600 px-3 py-2 text-sm text-white"
                           }
                         >
-                          {ACTION_LABEL[s]}
+                          {t(ACTION_KEY[s])}
                         </ConfirmButton>
                       </form>
                     ))}
@@ -151,14 +151,14 @@ export default async function ProviderOrdersPage({
       <div className="mt-6 flex justify-between">
         {page > 1 ? (
           <Link href={pathFor(status, page - 1)} className="text-orange-600">
-            &larr; Naye orders
+            &larr; {t("porders.newer")}
           </Link>
         ) : (
           <span />
         )}
         {data && data.total > page * LIMIT && (
           <Link href={pathFor(status, page + 1)} className="text-orange-600">
-            Aur purane orders &rarr;
+            {t("orders.older")} &rarr;
           </Link>
         )}
       </div>

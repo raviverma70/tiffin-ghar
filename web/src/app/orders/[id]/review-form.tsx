@@ -2,10 +2,12 @@
 
 import { useActionState, useState } from "react";
 import { submitReviewAction, type ReviewState } from "../actions";
+import { useT } from "@/i18n/client";
 
 const initial: ReviewState = { error: "" };
 
 export default function ReviewForm({ orderId }: { orderId: number }) {
+  const t = useT();
   const [state, action, pending] = useActionState(submitReviewAction, initial);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -21,7 +23,7 @@ export default function ReviewForm({ orderId }: { orderId: number }) {
             key={n}
             type="button"
             onClick={() => setRating(n)}
-            aria-label={`${n} star`}
+            aria-label={t("review.star", { n })}
             aria-pressed={rating === n}
             className={n <= rating ? "text-3xl text-orange-500" : "text-3xl text-gray-300"}
           >
@@ -36,7 +38,7 @@ export default function ReviewForm({ orderId }: { orderId: number }) {
         onChange={(e) => setComment(e.target.value)}
         maxLength={500}
         rows={3}
-        placeholder="Kuch likhna ho to likho (optional)"
+        placeholder={t("review.placeholder")}
         className="w-full rounded border px-3 py-2"
       />
 
@@ -46,7 +48,7 @@ export default function ReviewForm({ orderId }: { orderId: number }) {
         disabled={pending || rating === 0}
         className="rounded bg-orange-600 px-4 py-2 text-white disabled:opacity-50"
       >
-        {pending ? "Ruko..." : "Review bhejo"}
+        {pending ? t("common.loading") : t("review.submit")}
       </button>
     </form>
   );
