@@ -1,63 +1,61 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
+import { api } from "@/lib/api";
 import { API_URL } from "@/lib/config";
-import { DEFAULT_LOCALE, makeT, messagesFor } from "@/i18n";
+import { translateError, useT } from "@/i18n";
+import { LanguagePicker } from "@/components/LanguagePicker";
 
-// Step 1 ki test screen: dikhati hai ki phone backend tak pahunch raha hai. Step 4 me asli dukaan list banegi.
-const t = makeT(messagesFor(DEFAULT_LOCALE));
+// Test screen: backend se dukaanein aur bhasha badalna. Step 4 me asli dukaan list banegi.
 const CITY = "Prayagraj";
 
 type Shop = { id: number; shopName: string; city: string };
 
 export default function Home() {
+  const t = useT();
   const [shops, setShops] = useState<Shop[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/providers?city=${encodeURIComponent(CITY)}`)
-      .then(async (res) => {
-        if (!res.ok) throw new Error(t("err.generic"));
-        const data: { items: Shop[] } = await res.json();
-        setShops(data.items);
-      })
-      .catch(() => setError(t("err.network")));
+    api<{ items: Shop[] }>(`/providers?city=${encodeURIComponent(CITY)}`).then((res) => {
+      if (res.ok) setShops(res.data.items);
+      else setError(res.error);
+    });
   }, []);
-
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.error}>{error}</Text>
-        <Text style={styles.muted}>{API_URL}</Text>
-      </View>
-    );
-  }
-
-  if (!shops) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-        <Text style={styles.muted}>{t("common.loading")}</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t("home.shopsIn", { city: CITY })}</Text>
-      <FlatList
-        data={shops}
-        keyExtractor={(s) => String(s.id)}
-        renderItem={({ item }) => <Text style={styles.item}>{item.shopName}</Text>}
-        ListEmptyComponent={<Text style={styles.muted}>{t("home.noShops", { city: CITY })}</Text>}
-      />
+      <LanguagePicker />
+
+      {error ? (
+        <View style={styles.center}>
+          {/* Backend ka Hinglish error, chuni bhasha me */}
+          <Text style={styles.error}>{translateError(t, error)}</Text>
+          <Text style={styles.muted}>{API_URL}</Text>
+        </View>
+      ) : !shops ? (
+        <View style={styles.center}>
+          <ActivityIndicator />
+          <Text style={styles.muted}>{t("common.loading")}</Text>
+        </View>
+      ) : (
+        <>
+          <Text style={styles.title}>{t("home.shopsIn", { city: CITY })}</Text>
+          <FlatList
+            data={shops}
+            keyExtractor={(s) => String(s.id)}
+            renderItem={({ item }) => <Text style={styles.item}>{item.shopName}</Text>}
+            ListEmptyComponent={<Text style={styles.muted}>{t("home.noShops", { city: CITY })}</Text>}
+          />
+        </>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8, padding: 16 },
-  title: { fontSize: 20, fontWeight: "600", marginBottom: 12 },
+  container: { flex: 1, padding: 16, gap: 16, backgroundColor: "#fff" },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
+  title: { fontSize: 20, fontWeight: "600" },
   item: { fontSize: 16, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: "#ddd" },
   error: { color: "#b91c1c", textAlign: "center" },
   muted: { color: "#6b7280", textAlign: "center" },
