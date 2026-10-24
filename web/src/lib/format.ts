@@ -24,3 +24,15 @@ export function formatDate(iso: string, locale: Locale = "hinglish") {
     timeStyle: "short",
   });
 }
+
+// Sirf tareekh (subscription ki shuru/khatam). Backend "2026-10-24T00:00:00.000Z" bhejta hai, isliye UTC
+export function formatDay(iso: string, locale: Locale = "hinglish") {
+  return new Date(iso).toLocaleDateString(INTL_LOCALE[locale], { timeZone: "UTC", dateStyle: "medium" });
+}
+
+// Subscription ka aakhri din: shuru + (din - 1)
+export function lastDayIso(startIso: string, days: number) {
+  const d = new Date(startIso);
+  d.setUTCDate(d.getUTCDate() + days - 1);
+  return d.toISOString();
+}

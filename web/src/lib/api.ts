@@ -136,3 +136,15 @@ export async function getMe(accessToken: string): Promise<User | null> {
     return null;
   }
 }
+// Shehar ke area jahan dukaanein hain (form ke suggestion ke liye). Fail ho to khali list
+export async function getAreas(city: string): Promise<string[]> {
+  if (city.trim().length < 2) return [];
+  try {
+    const res = await fetch(`${API_URL}/providers/areas?city=${encodeURIComponent(city)}`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const data = (await res.json()) as { items: { area: string }[] };
+    return data.items.map((a) => a.area);
+  } catch {
+    return [];
+  }
+}

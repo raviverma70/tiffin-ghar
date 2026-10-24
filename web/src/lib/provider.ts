@@ -11,6 +11,9 @@ export type ProviderProfile = {
   status: "PENDING" | "APPROVED" | "REJECTED";
   isOpen: boolean;
   photoUrl: string | null;
+  area: string | null;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 export type DashMenuItem = {
@@ -22,6 +25,7 @@ export type DashMenuItem = {
   isVeg: boolean;
   isAvailable: boolean;
   photoUrl: string | null;
+  mealTime: MealTime;
 };
 
 export type ProviderOrder = {
@@ -100,3 +104,103 @@ export function paiseToRupees(paise: number) {
   const r = paise / 100;
   return Number.isInteger(r) ? String(r) : r.toFixed(2);
 }
+
+// ---------- Khane ka time ----------
+
+export type MealTime = "BREAKFAST" | "LUNCH" | "DINNER";
+export const MEAL_TIMES: MealTime[] = ["BREAKFAST", "LUNCH", "DINNER"];
+
+export const MEAL_KEY: Record<MealTime, MessageKey> = {
+  BREAKFAST: "meal.BREAKFAST",
+  LUNCH: "meal.LUNCH",
+  DINNER: "meal.DINNER",
+};
+
+export const MEAL_SHORT_KEY: Record<MealTime, MessageKey> = {
+  BREAKFAST: "mealShort.BREAKFAST",
+  LUNCH: "mealShort.LUNCH",
+  DINNER: "mealShort.DINNER",
+};
+
+export const MEAL_ICON: Record<MealTime, string> = {
+  BREAKFAST: "🌅",
+  LUNCH: "☀️",
+  DINNER: "🌙",
+};
+
+export function isMealTime(value: unknown): value is MealTime {
+  return typeof value === "string" && (MEAL_TIMES as string[]).includes(value);
+}
+
+// ---------- Subscription plans ----------
+
+export type PlanDayMenu = { day: number; mealTime: MealTime; dishes: string[] };
+
+export type ProviderPlan = {
+  id: number;
+  name: string;
+  description: string | null;
+  days: number;
+  mealTimes: MealTime[];
+  pricePaise: number;
+  isVeg: boolean;
+  isActive: boolean;
+  dayMenus: PlanDayMenu[];
+  _count: { subscriptions: number };
+};
+
+export function menuSlots(plan: { days: number; mealTimes: MealTime[] }) {
+  return plan.days * plan.mealTimes.length;
+}
+
+// ---------- Subscriptions ----------
+
+export type SubscriptionStatus = "REQUESTED" | "ACTIVE" | "COMPLETED" | "REJECTED" | "CANCELLED";
+
+export type ProviderSubscription = {
+  id: number;
+  planName: string;
+  days: number;
+  mealTimes: MealTime[];
+  pricePaise: number;
+  startDate: string;
+  deliveryAddress: string;
+  note: string | null;
+  status: SubscriptionStatus;
+  createdAt: string;
+  user: { phone: string };
+};
+
+export const SUB_STATUS_KEY: Record<SubscriptionStatus, MessageKey> = {
+  REQUESTED: "sstatus.REQUESTED",
+  ACTIVE: "sstatus.ACTIVE",
+  COMPLETED: "sstatus.COMPLETED",
+  REJECTED: "sstatus.REJECTED",
+  CANCELLED: "sstatus.CANCELLED",
+};
+
+export type SubAction = "ACTIVE" | "REJECTED" | "COMPLETED" | "CANCELLED";
+
+// Backend ke ALLOWED_FROM jaisa hi
+export const SUB_NEXT: Partial<Record<SubscriptionStatus, SubAction[]>> = {
+  REQUESTED: ["ACTIVE", "REJECTED"],
+  ACTIVE: ["COMPLETED", "CANCELLED"],
+};
+
+export const SUB_ACTION_KEY: Record<SubAction, MessageKey> = {
+  ACTIVE: "subs.act.ACTIVE",
+  REJECTED: "subs.act.REJECTED",
+  COMPLETED: "subs.act.COMPLETED",
+  CANCELLED: "subs.act.CANCELLED",
+};
+
+export const SUB_STATUSES: SubscriptionStatus[] = ["REQUESTED", "ACTIVE", "COMPLETED", "REJECTED", "CANCELLED"];
+
+// Status ke rang (badge)
+export const SUB_STATUS_STYLE: Record<SubscriptionStatus, string> = {
+  REQUESTED: "bg-blue-50 text-blue-700 ring-blue-200",
+  ACTIVE: "bg-green-50 text-green-700 ring-green-200",
+  COMPLETED: "bg-gray-100 text-gray-700 ring-gray-200",
+  REJECTED: "bg-red-50 text-red-700 ring-red-200",
+  CANCELLED: "bg-red-50 text-red-700 ring-red-200",
+};

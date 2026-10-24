@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { authedFetch, refreshInline } from "@/lib/authed";
 import { providerFetch } from "@/lib/provider-api";
-import { rupeesToPaise } from "@/lib/provider";
+import { isMealTime, rupeesToPaise, type MealTime } from "@/lib/provider";
 import { uploadImage } from "@/lib/upload";
 import { apiError, getT } from "@/i18n/server";
 import type { Translator } from "@/i18n/translate";
@@ -26,14 +26,25 @@ function withNotice(path: string, notice: string) {
 
 // ---------- Dukaan ki profile ----------
 
+// "25.4537" -> 25.4537, khali ya galat -> undefined
+function coord(fd: FormData, key: string) {
+  const value = text(fd, key);
+  if (!/^-?\d{1,3}(\.\d{1,8})?$/.test(value)) return undefined;
+  return Number(value);
+}
+
 function profileBody(fd: FormData) {
   const fssai = text(fd, "fssaiNumber");
+  const area = text(fd, "area");
   return {
     shopName: text(fd, "shopName"),
     city: text(fd, "city"),
     address: text(fd, "address"),
     pincode: text(fd, "pincode"),
     fssaiNumber: fssai || undefined,
+    area: area || undefined,
+    latitude: coord(fd, "latitude"),
+    longitude: coord(fd, "longitude"),
   };
 }
 
@@ -87,6 +98,7 @@ type MenuBody = {
   dayOfWeek: number | null;
   isVeg: boolean;
   isAvailable: boolean;
+  mealTime: MealTime;
 };
 
 type MenuForm = { error: string; body: null } | { error: null; body: MenuBody };
@@ -102,6 +114,11 @@ function readMenuForm(fd: FormData, forUpdate: boolean, t: Translator): MenuForm
     return { error: t("err.dayBad"), body: null };
   }
 
+  const mealTime = text(fd, "mealTime");
+  if (!isMealTime(mealTime)) {
+    return { error: t("err.mealTimeBad"), body: null };
+  }
+
   const description = text(fd, "description");
   return {
     error: null,
@@ -113,6 +130,7 @@ function readMenuForm(fd: FormData, forUpdate: boolean, t: Translator): MenuForm
       dayOfWeek: day === "" ? null : Number(day),
       isVeg: fd.get("isVeg") === "on",
       isAvailable: fd.get("isAvailable") === "on",
+      mealTime,
     },
   };
 }
@@ -201,6 +219,29 @@ export async function updateOrderStatusAction(fd: FormData): Promise<void> {
 
   // Customer ne beech me cancel kar diya ho to 409 aata hai, message upar dikhega
   if (!res.ok) redirect(withNotice(back, await apiError(res)));
+  redirect(back);
+}
+
+// ---------- Subscriptions ----------
+
+const SUB_ACTIONS = ["ACTIVE", "REJECTED", "COMPLETED", "CANCELLED"];
+
+export async function updateSubscriptionStatusAction(fd: FormData): Promise<void> {
+  const id = text(fd, "id");
+  const status = text(fd, "status");
+  const rawBack = text(fd, "back");
+  const back = rawBack.startsWith("/dashboard/subscriptions") ? rawBack : "/dashboard/subscriptions";
+
+  if (!/^\d{1,10}$/.test(id) || !SUB_ACTIONS.includes(status)) redirect(back);
+
+  const res = await providerFetch(`/providers/me/subscriptions/${id}/status`, {
+    mode: "action",
+    returnTo: back,
+    method: "PATCH",
+    body: { status },
+  });
+  if (!res.ok) redirect(withNotice(back, await apiError(res)));
+  revalidatePath("/dashboard");
   redirect(back);
 }
 

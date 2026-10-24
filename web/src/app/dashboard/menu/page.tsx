@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { providerFetch, requireProviderUser } from "@/lib/provider-api";
-import { DAY_KEYS, type DashMenuItem } from "@/lib/provider";
+import { DAY_KEYS, MEAL_ICON, MEAL_KEY, MEAL_TIMES, type DashMenuItem } from "@/lib/provider";
 import { formatPrice } from "@/lib/format";
 import { photoSrc } from "@/lib/photo";
 import { getT } from "@/i18n/server";
@@ -63,9 +63,19 @@ export default async function MenuPage({
       {!items && <p className="mt-4 text-red-600">{t("menu.loadFail")}</p>}
       {items && items.length === 0 && <p className="mt-4 text-gray-600">{t("menu.empty")}</p>}
 
-      {items && items.length > 0 && (
-        <ul className="mt-4 space-y-3">
-          {items.map((item) => (
+      {items &&
+        items.length > 0 &&
+        MEAL_TIMES.map((meal) => {
+          const group = items.filter((i) => i.mealTime === meal);
+          if (group.length === 0) return null;
+          return (
+            <section key={meal} className="mt-6">
+              <h3 className="flex items-center gap-2 text-base font-semibold text-gray-800">
+                <span aria-hidden>{MEAL_ICON[meal]}</span> {t(MEAL_KEY[meal])}
+                <span className="rounded-full bg-gray-100 px-2 text-xs font-medium text-gray-600">{group.length}</span>
+              </h3>
+        <ul className="mt-3 space-y-3">
+          {group.map((item) => (
             <li key={item.id} className="rounded-xl border bg-white p-4 shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -119,7 +129,9 @@ export default async function MenuPage({
             </li>
           ))}
         </ul>
-      )}
+            </section>
+          );
+        })}
     </main>
   );
 }

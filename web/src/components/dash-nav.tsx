@@ -2,22 +2,26 @@ import Link from "next/link";
 import { getT } from "@/i18n/server";
 import type { MessageKey } from "@/i18n/messages/hinglish";
 
-const TABS: { key: "home" | "menu" | "orders" | "reviews"; href: string; label: MessageKey }[] = [
+type Tab = "home" | "menu" | "plans" | "orders" | "subs" | "reviews";
+
+const TABS: { key: Tab; href: string; label: MessageKey }[] = [
   { key: "home", href: "/dashboard", label: "dash.tabHome" },
   { key: "menu", href: "/dashboard/menu", label: "dash.tabMenu" },
+  { key: "plans", href: "/dashboard/plans", label: "dash.tabPlans" },
   { key: "orders", href: "/dashboard/orders", label: "dash.tabOrders" },
+  { key: "subs", href: "/dashboard/subscriptions", label: "dash.tabSubs" },
   { key: "reviews", href: "/dashboard/reviews", label: "dash.tabReviews" },
 ];
 
 export default async function DashNav({
   active,
 }: {
-  active: "home" | "menu" | "orders" | "reviews";
+  active: Tab;
 }) {
   const { t } = await getT();
 
   return (
-    <nav className="flex flex-wrap items-center gap-2 border-b pb-3">
+    <nav className="-mx-1 flex items-center gap-2 overflow-x-auto whitespace-nowrap border-b px-1 pb-3">
       <Link href="/" className="mr-2 text-orange-600">
         &larr; {t("nav.website")}
       </Link>

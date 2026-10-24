@@ -5,6 +5,7 @@ import { providerFetch } from "@/lib/provider-api";
 import type { ProviderProfile } from "@/lib/provider";
 import { getReviews } from "@/lib/reviews";
 import { photoSrc } from "@/lib/photo";
+import { getAreas } from "@/lib/api";
 import { getT } from "@/i18n/server";
 import DashNav from "@/components/dash-nav";
 import PhotoUploader from "@/components/photo-uploader";
@@ -74,7 +75,14 @@ export default async function DashboardPage({
     returnTo: "/dashboard",
   });
   const newOrders = ordersRes.ok ? ((await ordersRes.json()) as { total: number }).total : null;
+  const subsRes = await providerFetch("/providers/me/subscriptions?status=REQUESTED&limit=1", {
+    mode: "page",
+    returnTo: "/dashboard",
+  });
+  const newSubs = subsRes.ok ? ((await subsRes.json()) as { total: number }).total : null;
   const reviews = await getReviews(p.id, 1, 1);
+  const areaSuggestions = await getAreas(p.city);
+  const hasLocation = p.latitude !== null && p.longitude !== null;
 
   return (
     <main className="mx-auto max-w-2xl p-6">
@@ -82,8 +90,15 @@ export default async function DashboardPage({
 
       <h1 className="mt-6 text-2xl font-bold">{p.shopName}</h1>
       <p className="text-gray-600">
+        {p.area ? `${p.area}, ` : ""}
         {p.city} - {p.pincode}
       </p>
+
+      {!hasLocation && (
+        <p className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+          📍 {t("dash.locationMissing")}
+        </p>
+      )}
 
       {notice && (
         <p className="mt-4 rounded border border-red-600 p-3 text-red-600">{notice}</p>
@@ -133,6 +148,20 @@ export default async function DashboardPage({
         <p className="text-sm text-gray-600">{t("dash.ordersHint")} &rarr;</p>
       </Link>
 
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <Link
+          href="/dashboard/subscriptions?status=REQUESTED"
+          className="block rounded-xl border bg-white p-4 hover:bg-orange-50"
+        >
+          <p className="font-semibold">{t("dash.newSubs", { n: newSubs === null ? "-" : newSubs })}</p>
+          <p className="text-sm text-gray-600">{t("dash.subsHint")} &rarr;</p>
+        </Link>
+        <Link href="/dashboard/plans" className="block rounded-xl border bg-white p-4 hover:bg-orange-50">
+          <p className="font-semibold">🗓️ {t("dash.plansCard")}</p>
+          <p className="text-sm text-gray-600">{t("dash.plansHint")} &rarr;</p>
+        </Link>
+      </div>
+
       {reviews && (
         <Link
           href="/dashboard/reviews"
@@ -150,10 +179,10 @@ export default async function DashboardPage({
         <p>{t("dash.fssai", { value: p.fssaiNumber ?? t("dash.fssaiNone") })}</p>
       </div>
 
-      <details className="mt-6 rounded-xl border bg-white p-4">
+      <details className="mt-6 rounded-xl border bg-white p-4" open={!hasLocation}>
         <summary className="cursor-pointer font-semibold">{t("dash.editProfile")}</summary>
         <div className="mt-4">
-          <ProfileForm mode="edit" profile={p} />
+          <ProfileForm mode="edit" profile={p} areaSuggestions={areaSuggestions} />
         </div>
       </details>
     </main>
