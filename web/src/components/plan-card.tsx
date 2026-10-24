@@ -12,7 +12,7 @@ export default async function PlanCard({ plan }: { plan: Plan }) {
 
   return (
     <Link
-      href={`/provider/${plan.provider.id}#plans`}
+      href={`/plans/${plan.id}`}
       className="group flex h-full w-72 shrink-0 snap-start flex-col rounded-2xl border border-purple-200 bg-gradient-to-b from-purple-50 to-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-purple-400 hover:shadow-lg"
     >
       <div className="flex items-center justify-between gap-2">

@@ -221,3 +221,57 @@ export async function getAreas(city: string): Promise<string[]> {
     return [];
   }
 }
+
+// Dukaan ke page ka upar wala hissa (band ho tab bhi milta hai)
+export type ShopDetail = Provider & {
+  area: string | null;
+  isOpen: boolean;
+  isVerified: boolean;
+  isPureVeg: boolean;
+  planCount: number;
+};
+
+export async function getShop(id: string): Promise<ShopDetail | null> {
+  try {
+    const res = await fetch(`${API_URL}/providers/${encodeURIComponent(id)}`, { cache: "no-store" });
+    if (!res.ok) return null;
+    return (await res.json()) as ShopDetail;
+  } catch {
+    return null;
+  }
+}
+
+export type DayMenu = { day: number; mealTime: MealTime; dishes: string[] };
+
+// Dukaan ka plan, poore din-wise menu ke saath
+export type PublicPlan = {
+  id: number;
+  providerId: number;
+  name: string;
+  description: string | null;
+  days: number;
+  mealTimes: MealTime[];
+  pricePaise: number;
+  isVeg: boolean;
+  dayMenus: DayMenu[];
+};
+
+export async function getShopPlans(id: string): Promise<PublicPlan[]> {
+  try {
+    const res = await fetch(`${API_URL}/providers/${encodeURIComponent(id)}/plans`, { cache: "no-store" });
+    if (!res.ok) return [];
+    return ((await res.json()) as { items: PublicPlan[] }).items;
+  } catch {
+    return [];
+  }
+}
+
+export async function getPlan(id: string): Promise<(PublicPlan & { provider: Provider & { area: string | null } }) | null> {
+  try {
+    const res = await fetch(`${API_URL}/plans/${encodeURIComponent(id)}`, { cache: "no-store" });
+    if (!res.ok) return null;
+    return (await res.json()) as PublicPlan & { provider: Provider & { area: string | null } };
+  } catch {
+    return null;
+  }
+}

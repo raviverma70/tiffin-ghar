@@ -176,6 +176,40 @@ router.get("/areas", publicLimiter, async (req, res, next) => {
   }
 });
 
+// Dukaan ki public jaankari (band ho tab bhi, taaki plans aur reviews dikh sakein)
+router.get("/:id", publicLimiter, async (req, res, next) => {
+  try {
+    const id = parseId(req.params.id);
+    if (!id) return res.status(400).json({ error: "Galat provider id" });
+
+    const p = await prisma.provider.findFirst({
+      where: { id, status: "APPROVED" },
+      select: {
+        ...publicProviderSelect,
+        isOpen: true,
+        fssaiNumber: true,
+        _count: {
+          select: {
+            plans: { where: { isActive: true } },
+            menuItems: { where: { isAvailable: true, isVeg: false } },
+          },
+        },
+      },
+    });
+    if (!p) return res.status(404).json({ error: "Dukaan nahi mili" });
+
+    const { fssaiNumber, _count, ...rest } = p;
+    res.json({
+      ...withRating(rest),
+      isVerified: fssaiNumber !== null,
+      isPureVeg: _count.menuItems === 0,
+      planCount: _count.plans,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
 // Ek provider ka aaj ka menu
 router.get("/:id/menu", publicLimiter, async (req, res, next) => {
   try {

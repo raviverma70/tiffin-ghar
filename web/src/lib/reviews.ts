@@ -6,6 +6,7 @@ export type ReviewItem = {
   comment: string | null;
   createdAt: string;
   customer: string;
+  photos: { id: number; url: string }[];
 };
 
 export type ReviewsPage = {

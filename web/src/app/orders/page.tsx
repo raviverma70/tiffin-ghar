@@ -3,6 +3,7 @@ import { authedFetch } from "@/lib/authed";
 import { formatDate, formatPrice } from "@/lib/format";
 import { STATUS_KEY, type Order } from "@/lib/orders";
 import { getT } from "@/i18n/server";
+import CustomerNav from "@/components/customer-nav";
 
 const LIMIT = 20;
 
@@ -23,11 +24,9 @@ export default async function OrdersPage({
   const data = res.ok ? ((await res.json()) as { items: Order[]; total: number }) : null;
 
   return (
-    <main className="mx-auto max-w-2xl p-6">
-      <Link href="/" className="text-orange-600">
-        &larr; {t("nav.home")}
-      </Link>
-      <h1 className="mt-4 text-2xl font-bold">{t("orders.title")}</h1>
+    <main className="mx-auto max-w-3xl px-4 py-6">
+      <CustomerNav active="orders" />
+      <h1 className="mt-5 text-2xl font-bold">{t("orders.title")}</h1>
 
       {!data && <p className="mt-4 text-red-600">{t("orders.loadFail")}</p>}
 

@@ -13,9 +13,10 @@ Ye file `tiffin-ghar-project-notes-step7.md` (aur usse pehle ki files) ke **baad
 | Phase 1: migration + backend (location, sorting, plans, subscriptions, favourite, review photo) | ho gaya, 30+ API test pass | `013b492` |
 | Phase 2: provider dashboard (location button, mealTime, plans + din-wise menu grid, subscriptions page, suggestion chips) | ho gaya, browser test pass | `0a8a688` |
 | Push | Phase 1, 2 GitHub par | `main` = `0a8a688` |
-| Phase 3: front page (location, sort, area, naya card, plans ki row) | ho gaya, browser test pass, push hua | Phase 3 commit |
+| Phase 3: front page (location, sort, area, naya card, plans ki row) | ho gaya, push hua | `4679e6b` |
+| Phase 4: dukaan ke tabs, plan lena, mere subscriptions, favourite, share | ho gaya, browser test pass, push hua | Phase 4 commit |
 
-**Agla:** Phase 4 (dukaan ka page + subscription lena), phir 5, 6 (section 11). Phase 3 section 12 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
+**Agla:** Phase 5 (review me photo), phir 6 (design). Phase 3 section 12 me, Phase 4 section 13 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
 
 ## 2. Faisle jo tay hue
 
@@ -425,7 +426,7 @@ GitHub: https://github.com/raviverma70/tiffin-ghar (account `raviverma70`). Repo
 ## 11. Agla aur bachi hui cheezein
 
 1. ~~Phase 3, front page~~: ho gaya (section 12).
-2. **Phase 4, dukaan ka page + subscription lena:** tabs (Aaj ka menu, Plans, Reviews, Jaankari), plan ka din-wise menu, plan lena (tareekh, pata), "Mere subscriptions", favourite (dil), share.
+2. ~~Phase 4, dukaan ka page + subscription lena~~: ho gaya (section 13).
 3. **Phase 5, review me photo** (website par upload, review ke saath dikhana).
 4. **Phase 6, naya design har page par:** Mere orders ke rangin status badge, font, spacing, khali list ke achhe message.
 5. **Mobile Step 3 se 9:** OTP login, dukaan list (location `expo-location` se), dukaan + cart, order, mere orders, review, provider dashboard.
@@ -440,7 +441,7 @@ GitHub: https://github.com/raviverma70/tiffin-ghar (account `raviverma70`). Repo
 - Chips: **📍 Paas me** (sirf location ho to), **⭐ Top rating**, **🟢 Pure veg**. Shehar chuno to **Area** ke chips (Poora shehar, Civil Lines...). Chuna area sabse upar, card par "Aapke area me".
 - Shehar ke button ab backend se (`/providers/cities`), haath se likhe nahi. Backend band ho to purani list.
 - **Naya dukaan card:** photo par doori aur area badge, hara rating badge (4+ hara, 3+ halka hara, kam ho to peela, review na ho to "Nayi"), Verified (FSSAI), Pure veg, "2 plan", aaj ki dishes time ke icon ke saath, review ki ek line, "₹60 se shuru", ek hi button "Menu dekho".
-- Dukaanon ke neeche **🗓️ Subscription plans** ki row (side me scroll): din, time, Din 1 ka menu, poora daam, "₹120 roz", dukaan ki rating. Achhi rating wali dukaanon ke plans pehle. "Plan dekho" abhi dukaan ke page par jata hai (`#plans`, Phase 4 me wahan plans dikhenge).
+- Dukaanon ke neeche **🗓️ Subscription plans** ki row (side me scroll): din, time, Din 1 ka menu, poora daam, "₹120 roz", dukaan ki rating. Achhi rating wali dukaanon ke plans pehle. "Plan dekho" seedha plan ke page `/plans/[id]` par jata hai (Phase 4 me badla).
 
 ### Backend badlav
 - `GET /providers` me ab `city` zaroori nahi agar `lat`/`lng` ho. Tab location ke ~50 km dabbe (0.45 degree) ki dukaanein aati hain. Na shehar na location ho to error "Shehar likho".
@@ -497,6 +498,73 @@ Phir page reload karo.
 | Rating badge "3.3 ★" do line me | Badge par `whitespace-nowrap shrink-0` |
 | "1 shops" (English) | Text "(1 found)" kiya, teeno bhasha me |
 
-## 13. Naye chat me ye paste karo (hamesha aakhri section)
+## 13. Phase 4: dukaan ka page, plan lena, mere subscriptions, pasandida
 
-> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) aur Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) ho gaye. Ab Phase 4 (dukaan ka page + subscription lena) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.
+### Kya bana
+- **Dukaan ka page** (`/provider/[id]`): upar photo, naam, area, rating badge, "● Abhi khuli hai / Abhi band hai", Verified, Pure veg, "2 plan". Right me **↗ Share** aur **♡ dil**.
+  - **4 tabs** (`?tab=`): **Aaj ka menu** (order form, purana wala), **Plans** (har plan ka card, "Har din ka menu dekho" khol kar poori table, "Ye plan lo"), **Reviews** (5 naye, photo ke saath, "Saare reviews dekho"), **Jaankari** (jagah, khula/band, bharosa, veg, plans, payment).
+  - Dukaan **band** ho tab bhi page khulta hai (pehle "band hai" likh kar ruk jata tha). Band dukaan par seedha Plans tab.
+- **Share:** phone par apna share menu (WhatsApp waghera), PC par link copy ("Link copy ho gaya").
+- **Favourite (♡ → ♥):** dabate hi turant laal (optimistic), login nahi to login page par. `/favourites` par list.
+- **Plan ka page** (`/plans/[id]`): plan ki jaankari, daam, "₹120 roz · ₹60 ek khana", poora din-wise menu (PC par table, phone par har din ka card), right me **"Plan lo"** form: shuru ki tareekh (aaj se 30 din, aakhri din apne aap dikhta hai), pata, note, "Paisa abhi seedha dukaan wale ko (COD)". Login nahi to "Login karo" button (login ke baad wapas isi page par).
+- **Mere subscriptions** (`/subscriptions`): har subscription ka card, rangin status, tareekh, "Aaj Din 3 hai".
+- **Subscription detail** (`/subscriptions/[id]`): status, tareekh, pata, din-wise menu me **aaj ka din orange**, "Request cancel karo" (sirf naye request par). Plan lene ke baad "Request bhej di!" ka hara message.
+- Customer ke pages ke upar tabs: **🧾 Orders · 🗓️ Subscriptions · ♥ Pasandida**.
+- Front page ke plan card ka "Plan dekho" ab seedha `/plans/[id]` par.
+
+### Backend
+- Naya `GET /providers/:id`: dukaan ki public jaankari (approved ho to, band ho tab bhi): `isOpen`, `isVerified`, `isPureVeg`, `planCount`, rating.
+
+### Files
+```
+backend/routes/publicProviders.ts       ~ GET /providers/:id
+web/src/app/provider/[id]/page.tsx      ~ poora naya (tabs)
+web/src/app/provider/[id]/actions.ts    ~ toggleFavouriteAction
+web/src/app/plans/[id]/page.tsx, subscribe-form.tsx, actions.ts   *
+web/src/app/subscriptions/page.tsx, [id]/page.tsx, actions.ts     *
+web/src/app/favourites/page.tsx         *
+web/src/app/orders/page.tsx             ~ upar CustomerNav
+web/src/components/favourite-button.tsx, share-button.tsx, plan-menu-table.tsx, customer-nav.tsx  *
+web/src/components/plan-card.tsx        ~ link /plans/[id]
+web/src/lib/api.ts                      ~ getShop, getShopPlans, getPlan
+web/src/lib/customer.ts                 * subscription type, aaj ka din (India)
+web/src/lib/reviews.ts                  ~ photos
+web/src/i18n/messages/*.ts              ~ ~70 naye text (shop.*, fav.*, share.*, cnav.*, plan.*, msub.*)
+```
+
+### Tests
+
+Backend (PowerShell):
+```
+Invoke-RestMethod "http://localhost:5000/api/v1/providers/1" | ConvertTo-Json
+```
+Galat id (error aayega: "Dukaan nahi mili"):
+```
+Invoke-RestMethod "http://localhost:5000/api/v1/providers/99999"
+```
+
+Browser (customer `9999999999` se login):
+1. `http://localhost:3000/provider/1` → upar badges, Share, ♡. Tabs badlo: Aaj ka menu, Plans, Reviews, Jaankari.
+2. **♡** dabao → ♥ laal. `http://localhost:3000/favourites` par dukaan dikhe. Dobara dabao → hat jaye.
+3. **Share** dabao → PC par "Link copy ho gaya" (phone par share menu).
+4. **Plans** → "Har din ka menu dekho" → table → **Ye plan lo**.
+5. Plan page par tareekh chuno ("Aakhri din" badlega), pata likho → **Plan ki request bhejo** → `/subscriptions/N?new=1`, hara message, "Naya request".
+6. **Request cancel karo** → "pakka?" → OK → "Cancel hua", hara message hat jaye.
+7. `http://localhost:3000/subscriptions` → saare subscriptions, chalu wale par "Aaj Din 1 hai".
+8. Provider (`8888888888`) se `/dashboard/subscriptions` par naya request dikhe → "Chalu karo" → customer ke page par "Chalu" aur aaj ka din orange.
+9. Logout karke `/plans/1` kholo → form ki jagah "Login karo" → login ke baad wapas plan page.
+10. Dukaan band karke (provider dashboard) `/provider/1` kholo → seedha Plans tab, Aaj ka menu me "dukaan abhi band hai".
+
+### Galtiyan aur hal
+| Galti | Hal |
+|---|---|
+| Cancel ke baad bhi "Request bhej di!" dikhta tha | Cancel action ab `?new=1` ke bina page par redirect karta hai |
+| Menu table ke pehle column ka naam "Plan" | Naya text `plan.dayCol` ("Din") |
+| "COD" seedha code me likha tha | `shop.infoPay` text, teeno bhasha me |
+| Test backend (5001) band karte waqt aapka 5000 wala na ruke | Sirf `npx tsx index.ts` wale process roke, `tsx watch` (aapka) chhoda |
+
+**Test data:** customer `9999999999` ka subscription #2 (cancel hua) aur Sharma Ghar Ka Tiffin favourite me.
+
+## 14. Naye chat me ye paste karo (hamesha aakhri section)
+
+> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) aur Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) ho gaye. Ab Phase 5 (review me photo) aur Phase 6 (har page ka naya design) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.
