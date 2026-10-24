@@ -29,6 +29,9 @@ const MAX_IN_CITY = 500;
 
 const approvedOpen = { status: "APPROVED" as const, isOpen: true };
 
+// 0.45 degree ≈ 50 km (shehar na diya ho to itne dabbe me dhundte hain)
+const NEAR_DEG = 0.45;
+
 function parseId(value: unknown) {
   const id = Number(String(value));
   return Number.isInteger(id) && id >= 1 && id <= 2_147_483_647 ? id : null;
@@ -49,10 +52,19 @@ router.get("/", publicLimiter, async (req, res, next) => {
     const sort = parsed.data.sort ?? (lat !== undefined ? "distance" : "rating");
     const today = todayInIndia();
 
+    // Shehar na ho to location ke aas-paas (lagbhag 50 km ka dabba) ki dukaanein
+    const near =
+      city === undefined && lat !== undefined && lng !== undefined
+        ? {
+            latitude: { gte: lat - NEAR_DEG, lte: lat + NEAR_DEG },
+            longitude: { gte: lng - NEAR_DEG, lte: lng + NEAR_DEG },
+          }
+        : {};
+
     const rows = await prisma.provider.findMany({
       where: {
         ...approvedOpen,
-        city: { equals: city, mode: "insensitive" },
+        ...(city !== undefined ? { city: { equals: city, mode: "insensitive" as const } } : near),
         ...(pincode ? { pincode } : {}),
       },
       select: {

@@ -12,9 +12,10 @@ Ye file `tiffin-ghar-project-notes-step7.md` (aur usse pehle ki files) ke **baad
 | Mobile Step 2: `api()` (token + refresh), secure tokens, `useT()`, bhasha chunna | ho gaya, phone par test pass | `9fa9fa7` |
 | Phase 1: migration + backend (location, sorting, plans, subscriptions, favourite, review photo) | ho gaya, 30+ API test pass | `013b492` |
 | Phase 2: provider dashboard (location button, mealTime, plans + din-wise menu grid, subscriptions page, suggestion chips) | ho gaya, browser test pass | `0a8a688` |
-| Push | dono phase GitHub par | `main` = `0a8a688` |
+| Push | Phase 1, 2 GitHub par | `main` = `0a8a688` |
+| Phase 3: front page (location, sort, area, naya card, plans ki row) | ho gaya, browser test pass, push hua | Phase 3 commit |
 
-**Agla:** Phase 3 (front page), phir 4, 5, 6 (section 11). Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
+**Agla:** Phase 4 (dukaan ka page + subscription lena), phir 5, 6 (section 11). Phase 3 section 12 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
 
 ## 2. Faisle jo tay hue
 
@@ -423,7 +424,7 @@ GitHub: https://github.com/raviverma70/tiffin-ghar (account `raviverma70`). Repo
 
 ## 11. Agla aur bachi hui cheezein
 
-1. **Phase 3, front page:** location ki permission (mana kare to shehar/area), "Paas me / Top rating / Pure veg" chips, card par doori, aaj ki dishes, "₹60 se shuru", verified badge, review ki line, neeche "Subscription plans" ki row. Shehar ke button `/providers/cities` se.
+1. ~~Phase 3, front page~~: ho gaya (section 12).
 2. **Phase 4, dukaan ka page + subscription lena:** tabs (Aaj ka menu, Plans, Reviews, Jaankari), plan ka din-wise menu, plan lena (tareekh, pata), "Mere subscriptions", favourite (dil), share.
 3. **Phase 5, review me photo** (website par upload, review ke saath dikhana).
 4. **Phase 6, naya design har page par:** Mere orders ke rangin status badge, font, spacing, khali list ke achhe message.
@@ -431,6 +432,71 @@ GitHub: https://github.com/raviverma70/tiffin-ghar (account `raviverma70`). Repo
 6. Baad me: dish ki rating, milti-julti dukaanein, map par dukaan, Razorpay, wallet (RBI expert), notifications.
 7. Test data: `Student Plan` (id 2) aur `7 din Lunch + Dinner` (id 1), customer ka subscription #1. Na chahiye to dashboard se hatao.
 
-## 12. Naye chat me ye paste karo
+## 12. Phase 3: front page (location, sort, naya card, plans ki row)
 
-> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) ho gaye, commit aur push hue. Ab Phase 3 (front page) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.
+### Kya bana
+- Page khulte hi **location ki permission** maangta hai (ek tab me ek hi baar apne aap). Mil gayi to bina shehar likhe **"Aapke paas ki dukaanein"**, sabse paas wali pehle, card par "📍 2.2 km door". Mana kiya to "Location nahi mili, neeche shehar chuno" aur "Dobara try karo" button.
+- Location **URL me nahi jati**, `tg_loc` cookie me (httpOnly, 1 din, ~100 meter tak gol). "Location hatao" se cookie hat jati hai. Database me kabhi save nahi hoti.
+- Chips: **📍 Paas me** (sirf location ho to), **⭐ Top rating**, **🟢 Pure veg**. Shehar chuno to **Area** ke chips (Poora shehar, Civil Lines...). Chuna area sabse upar, card par "Aapke area me".
+- Shehar ke button ab backend se (`/providers/cities`), haath se likhe nahi. Backend band ho to purani list.
+- **Naya dukaan card:** photo par doori aur area badge, hara rating badge (4+ hara, 3+ halka hara, kam ho to peela, review na ho to "Nayi"), Verified (FSSAI), Pure veg, "2 plan", aaj ki dishes time ke icon ke saath, review ki ek line, "₹60 se shuru", ek hi button "Menu dekho".
+- Dukaanon ke neeche **🗓️ Subscription plans** ki row (side me scroll): din, time, Din 1 ka menu, poora daam, "₹120 roz", dukaan ki rating. Achhi rating wali dukaanon ke plans pehle. "Plan dekho" abhi dukaan ke page par jata hai (`#plans`, Phase 4 me wahan plans dikhenge).
+
+### Backend badlav
+- `GET /providers` me ab `city` zaroori nahi agar `lat`/`lng` ho. Tab location ke ~50 km dabbe (0.45 degree) ki dukaanein aati hain. Na shehar na location ho to error "Shehar likho".
+
+### Files
+```
+backend/validators/publicProvider.ts   ~ city optional (location ho to)
+backend/routes/publicProviders.ts      ~ NEAR_DEG dabba
+web/src/app/page.tsx                   ~ poora naya front page
+web/src/app/location-actions.ts        * saveLocationAction, clearLocationAction (cookie)
+web/src/lib/location.ts                * cookie padhna, India ki seema, gol karna
+web/src/lib/api.ts                     ~ getProviders(options), ShopCard, getPlans, getCities
+web/src/components/location-prompt.tsx * permission maangna, "Location hatao"
+web/src/components/shop-card.tsx       * naya card + RatingBadge
+web/src/components/plan-card.tsx       * plan ka card
+web/src/i18n/messages/*.ts             ~ 33 naye home.* text
+```
+
+### Tests
+
+Backend (PowerShell, koi bhi folder):
+```
+(Invoke-RestMethod "http://localhost:5000/api/v1/providers?lat=25.44&lng=81.85").items | Select-Object shopName, city, distanceKm
+```
+Na shehar na location (error aayega: "Shehar likho"):
+```
+Invoke-RestMethod "http://localhost:5000/api/v1/providers"
+```
+Door ki location (Delhi), Prayagraj ki dukaan nahi aayegi (`0`):
+```
+(Invoke-RestMethod "http://localhost:5000/api/v1/providers?lat=28.6&lng=77.2").total
+```
+
+Browser:
+1. `http://localhost:3000` kholo. Browser location maangega → **Allow**. Upar "📍 Aapki location ke hisaab se", neeche "Aapke paas ki dukaanein", card par km.
+2. **Location hatao** dabao → "Kaise kaam karta hai" wala page, aur "Meri location se paas ki dukaanein dikhao" button.
+3. Location **Block** karke page reload karo → "Location nahi mili... shehar chuno" aur "Dobara try karo".
+4. **Prayagraj** button → "Prayagraj ki dukaanein", chips: Top rating, Pure veg, Area (Poora shehar, Civil Lines).
+5. **Civil Lines** → card par "Aapke area me". **Pure veg** dabao/hatao.
+6. Neeche **Subscription plans** ki row: dono plans, "₹120 roz", "Plan dekho".
+7. Header me bhasha हिन्दी / English karke wahi page dekho.
+8. Location sirf `localhost` ya `https` par milti hai. Phone ke browser me `http://192.168...:3000` par button "Location nahi mili" dikhayega, ye sahi hai (mobile app me `expo-location` se milegi).
+
+Test ke liye bina GPS location (browser ke DevTools Console me, sirf apne PC par):
+```
+document.cookie = "tg_loc=25.440,81.850; path=/; max-age=3600"
+```
+Phir page reload karo.
+
+### Galtiyan aur hal
+| Galti | Hal |
+|---|---|
+| ESLint: "Calling setState synchronously within an effect" (`location-prompt.tsx`) | Effect me seedha `getBrowserLocation().then(...).catch(() => setFailed(true))`, state sirf callback me badalta hai |
+| Rating badge "3.3 ★" do line me | Badge par `whitespace-nowrap shrink-0` |
+| "1 shops" (English) | Text "(1 found)" kiya, teeno bhasha me |
+
+## 13. Naye chat me ye paste karo (hamesha aakhri section)
+
+> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) aur Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) ho gaye. Ab Phase 4 (dukaan ka page + subscription lena) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.

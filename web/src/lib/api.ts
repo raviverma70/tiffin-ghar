@@ -26,10 +26,43 @@ export type TodayMenu = {
   items: MenuItem[];
 };
 
-export async function getProviders(city: string) {
-  const res = await fetch(`${API_URL}/providers?city=${encodeURIComponent(city)}`, {
-    cache: "no-store",
-  });
+type MealTime = "BREAKFAST" | "LUNCH" | "DINNER";
+
+// Front page ka card: dukaan + doori + aaj ki jhalak
+export type ShopCard = Provider & {
+  area: string | null;
+  distanceKm: number | null;
+  inArea: boolean;
+  isVerified: boolean;
+  isPureVeg: boolean;
+  planCount: number;
+  startingPricePaise: number | null;
+  todayPreview: { name: string; pricePaise: number; isVeg: boolean; mealTime: MealTime }[];
+  topReview: { rating: number; comment: string } | null;
+};
+
+export type ShopQuery = {
+  city?: string;
+  area?: string;
+  lat?: number;
+  lng?: number;
+  sort?: "distance" | "rating";
+  veg?: boolean;
+};
+
+export async function getProviders(q: ShopQuery) {
+  const params = new URLSearchParams();
+  if (q.city) params.set("city", q.city);
+  if (q.area) params.set("area", q.area);
+  if (q.lat !== undefined && q.lng !== undefined) {
+    params.set("lat", String(q.lat));
+    params.set("lng", String(q.lng));
+  }
+  if (q.sort) params.set("sort", q.sort);
+  if (q.veg) params.set("veg", "1");
+  params.set("limit", "50");
+
+  const res = await fetch(`${API_URL}/providers?${params}`, { cache: "no-store" });
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
@@ -37,11 +70,51 @@ export async function getProviders(city: string) {
   }
 
   return (await res.json()) as {
-    items: Provider[];
+    items: ShopCard[];
     total: number;
     page: number;
     limit: number;
+    sort: "distance" | "rating";
   };
+}
+
+// Front page ki "Subscription plans" row
+export type PlanCard = {
+  id: number;
+  name: string;
+  description: string | null;
+  days: number;
+  mealTimes: MealTime[];
+  pricePaise: number;
+  isVeg: boolean;
+  dayMenus: { mealTime: MealTime; dishes: string[] }[];
+  provider: Provider & { area: string | null };
+  inArea: boolean;
+};
+
+// Fail ho to khali list (plans ki row na dikhe, page na toote)
+export async function getPlans(city: string, area?: string): Promise<PlanCard[]> {
+  const params = new URLSearchParams({ city, limit: "12" });
+  if (area) params.set("area", area);
+  try {
+    const res = await fetch(`${API_URL}/plans?${params}`, { cache: "no-store" });
+    if (!res.ok) return [];
+    return ((await res.json()) as { items: PlanCard[] }).items;
+  } catch {
+    return [];
+  }
+}
+
+// Jin shehron me dukaanein hain. Fail ho to khali list
+export async function getCities(): Promise<string[]> {
+  try {
+    const res = await fetch(`${API_URL}/providers/cities`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const data = (await res.json()) as { items: { city: string }[] };
+    return data.items.map((c) => c.city);
+  } catch {
+    return [];
+  }
 }
 
 // Dukaan band ho ya mili na ho to null deta hai
