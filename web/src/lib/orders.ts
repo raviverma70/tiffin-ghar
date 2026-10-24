@@ -37,5 +37,5 @@ export type Order = {
   createdAt: string;
   provider: { id: number; shopName: string };
   items: OrderItem[];
-  review: { rating: number; comment: string | null } | null;
+  review: { id: number; rating: number; comment: string | null; photos: { id: number; url: string }[] } | null;
 };

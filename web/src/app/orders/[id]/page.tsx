@@ -7,13 +7,18 @@ import AutoRefresh from "@/components/auto-refresh";
 import { Stars } from "@/components/stars";
 import { cancelOrderAction } from "../actions";
 import ReviewForm from "./review-form";
+import ReviewPhotosEditor from "./review-photos-editor";
+import { photoSrc } from "@/lib/photo";
 
 export default async function OrderPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ photoError?: string }>;
 }) {
   const { id } = await params;
+  const { photoError } = await searchParams;
   const { t, locale } = await getT();
 
   const res = await authedFetch(`/orders/${encodeURIComponent(id)}`, {
@@ -103,6 +108,15 @@ export default async function OrderPage({
               {order.review.comment && (
                 <p className="mt-1 text-sm text-gray-600">{order.review.comment}</p>
               )}
+              {photoError && <p className="mt-2 text-sm text-amber-700">{t("rphoto.someFailed")}</p>}
+              <ReviewPhotosEditor
+                orderId={order.id}
+                reviewId={order.review.id}
+                photos={order.review.photos.flatMap((p) => {
+                  const src = photoSrc(p.url);
+                  return src ? [{ id: p.id, src }] : [];
+                })}
+              />
             </>
           ) : (
             <>

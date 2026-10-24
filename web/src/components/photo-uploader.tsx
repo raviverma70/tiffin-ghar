@@ -3,34 +3,10 @@
 import { useActionState, useRef, useState, useTransition, type ChangeEvent } from "react";
 import { removePhotoAction, uploadPhotoAction, type PhotoState } from "@/app/dashboard/actions";
 import Thumb from "@/components/thumb";
+import { compressImage } from "@/lib/compress-image";
 import { useT } from "@/i18n/client";
 
 const initial: PhotoState = { error: "" };
-const MAX_BYTES = 850_000;
-
-// Badi photo ko 1200px me chhota karke JPG banata hai
-async function compress(file: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, 1200 / Math.max(bitmap.width, bitmap.height));
-  const w = Math.round(bitmap.width * scale);
-  const h = Math.round(bitmap.height * scale);
-
-  const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("canvas");
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, w, h);
-  ctx.drawImage(bitmap, 0, 0, w, h);
-  bitmap.close();
-
-  for (const q of [0.85, 0.7, 0.55, 0.4]) {
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", q));
-    if (blob && blob.size <= MAX_BYTES) return blob;
-  }
-  throw new Error("big");
-}
 
 export default function PhotoUploader({
   kind,
@@ -60,11 +36,11 @@ export default function PhotoUploader({
     }
 
     try {
-      const blob = await compress(file);
+      const photo = await compressImage(file);
       const fd = new FormData();
       fd.set("kind", kind);
       if (itemId) fd.set("id", String(itemId));
-      fd.set("file", new File([blob], "photo.jpg", { type: "image/jpeg" }));
+      fd.set("file", photo);
       startTransition(() => upload(fd));
     } catch {
       setLocalError(t("err.photoOpen"));

@@ -14,6 +14,7 @@ import Thumb from "@/components/thumb";
 import FavouriteButton from "@/components/favourite-button";
 import ShareButton from "@/components/share-button";
 import PlanMenuTable from "@/components/plan-menu-table";
+import ReviewPhotos from "@/components/review-photos";
 import OrderForm from "./order-form";
 
 const TABS = ["menu", "plans", "reviews", "info"] as const;
@@ -222,18 +223,7 @@ export default async function ProviderPage({
                       <span className="text-xs text-gray-500">{formatDate(r.createdAt, locale)}</span>
                     </div>
                     {r.comment && <p className="mt-2 text-gray-800">{r.comment}</p>}
-                    {r.photos.length > 0 && (
-                      <div className="mt-3 flex gap-2">
-                        {r.photos.map((p) => (
-                          <Thumb
-                            key={p.id}
-                            src={photoSrc(p.url)}
-                            alt={t("rev.photoAlt", { name: r.customer })}
-                            className="h-20 w-20 rounded-lg"
-                          />
-                        ))}
-                      </div>
-                    )}
+                    <ReviewPhotos photos={r.photos} customer={r.customer} />
                     <p className="mt-2 text-xs text-gray-500">{t("reviews.customer", { name: r.customer })}</p>
                   </li>
                 ))}

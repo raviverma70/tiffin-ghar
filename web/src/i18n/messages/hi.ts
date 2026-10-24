@@ -505,4 +505,11 @@ export const hi: Record<MessageKey, string> = {
   "rev.photoAlt": "{name} की रिव्यू फ़ोटो",
   "shop.infoPay": "भुगतान",
   "plan.dayCol": "दिन",
+  "rphoto.add": "खाने की फ़ोटो जोड़ें (3 तक, वैकल्पिक)",
+  "rphoto.hint": "असली फ़ोटो से दूसरे ग्राहकों को चुनने में मदद मिलती है।",
+  "rphoto.remove": "फ़ोटो हटाएँ",
+  "rphoto.max": "एक रिव्यू में 3 फ़ोटो तक ही लगा सकते हैं।",
+  "rphoto.preview": "फ़ोटो {n}",
+  "rphoto.open": "फ़ोटो बड़ी करके देखें",
+  "rphoto.someFailed": "रिव्यू चला गया, पर कुछ फ़ोटो नहीं लग पाईं। नीचे से दोबारा लगाएँ।",
 };

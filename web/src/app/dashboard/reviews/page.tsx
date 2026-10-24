@@ -4,6 +4,7 @@ import type { ProviderProfile } from "@/lib/provider";
 import { getReviews } from "@/lib/reviews";
 import { formatDate } from "@/lib/format";
 import { getT } from "@/i18n/server";
+import ReviewPhotos from "@/components/review-photos";
 import DashNav from "@/components/dash-nav";
 import { RatingLine, Stars } from "@/components/stars";
 
@@ -49,6 +50,7 @@ export default async function DashboardReviewsPage({
                   <span className="text-xs text-gray-500">{formatDate(r.createdAt, locale)}</span>
                 </div>
                 {r.comment && <p className="mt-2">{r.comment}</p>}
+                <ReviewPhotos photos={r.photos} customer={r.customer} />
                 <p className="mt-2 text-xs text-gray-500">
                   {t("reviews.customer", { name: r.customer })}
                 </p>

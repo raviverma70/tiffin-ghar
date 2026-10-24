@@ -14,9 +14,10 @@ Ye file `tiffin-ghar-project-notes-step7.md` (aur usse pehle ki files) ke **baad
 | Phase 2: provider dashboard (location button, mealTime, plans + din-wise menu grid, subscriptions page, suggestion chips) | ho gaya, browser test pass | `0a8a688` |
 | Push | Phase 1, 2 GitHub par | `main` = `0a8a688` |
 | Phase 3: front page (location, sort, area, naya card, plans ki row) | ho gaya, push hua | `4679e6b` |
-| Phase 4: dukaan ke tabs, plan lena, mere subscriptions, favourite, share | ho gaya, browser test pass, push hua | Phase 4 commit |
+| Phase 4: dukaan ke tabs, plan lena, mere subscriptions, favourite, share | ho gaya, push hua | `ec03c2d` |
+| Phase 5: review me photo + baar-baar logout ka bug fix | ho gaya, browser test pass, push hua | Phase 5 commit |
 
-**Agla:** Phase 5 (review me photo), phir 6 (design). Phase 3 section 12 me, Phase 4 section 13 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
+**Agla:** Phase 6 (har page ka naya design). Phase 3 section 12, Phase 4 section 13, Phase 5 section 14 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
 
 ## 2. Faisle jo tay hue
 
@@ -427,7 +428,7 @@ GitHub: https://github.com/raviverma70/tiffin-ghar (account `raviverma70`). Repo
 
 1. ~~Phase 3, front page~~: ho gaya (section 12).
 2. ~~Phase 4, dukaan ka page + subscription lena~~: ho gaya (section 13).
-3. **Phase 5, review me photo** (website par upload, review ke saath dikhana).
+3. ~~Phase 5, review me photo~~: ho gaya (section 14).
 4. **Phase 6, naya design har page par:** Mere orders ke rangin status badge, font, spacing, khali list ke achhe message.
 5. **Mobile Step 3 se 9:** OTP login, dukaan list (location `expo-location` se), dukaan + cart, order, mere orders, review, provider dashboard.
 6. Baad me: dish ki rating, milti-julti dukaanein, map par dukaan, Razorpay, wallet (RBI expert), notifications.
@@ -565,6 +566,68 @@ Browser (customer `9999999999` se login):
 
 **Test data:** customer `9999999999` ka subscription #2 (cancel hua) aur Sharma Ghar Ka Tiffin favourite me.
 
-## 14. Naye chat me ye paste karo (hamesha aakhri section)
+## 14. Phase 5: review me photo + baar-baar logout wala bug
 
-> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) aur Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) ho gaye. Ab Phase 5 (review me photo) aur Phase 6 (har page ka naya design) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.
+### Kya bana (review photo)
+- **Review dete waqt** (`/orders/[id]`, delivered order): stars aur comment ke neeche "📷 Khane ki photo jodo (3 tak)". Ek saath kai photo chun sakte ho, preview me × se hata sakte ho.
+- Photo **browser me hi chhoti** hoti hai (1000px, 300 KB tak, JPG). Wajah: server action me ek baar me 1 MB tak hi ja sakta hai (Next.js), aur 3 photo saath jaati hain.
+- **Review ke baad bhi:** "Aapka review" me photos dikhti hain, × se hatao, "+" se jodo (3 hone par "+" chhup jata hai). Photo dabao to badi photo naye tab me.
+- Koi photo fail ho to review nahi rukta. Page par "kuch photo nahi lag payi, neeche se dobara lagao" dikhta hai.
+- Photos dikhti hain: dukaan ka Reviews tab, `/provider/[id]/reviews`, aur provider ka `/dashboard/reviews`.
+
+### Bug fix: user apne aap logout ho jata tha
+- **Kya hota tha:** access token (14 minute) khatam hone ke baad ek hi page ke do request ek saath purane refresh token se refresh karte the. Backend dusre ko "dobara use hua token" (chori) maan kar **poora session band** kar deta tha. Database me dikha: ek hi second me naya token bana aur usi second band hua (aapke apne browser ke saath bhi hua tha).
+- **Doosra chhed:** backend restart ho raha ho (code save par `tsx watch`) to refresh fail hota aur website cookies mita deti thi.
+- **Hal:** `web/src/lib/refresh.ts`: ek refresh token ka **ek hi refresh**, saath wale requests usi ka jawab lete hain (60 second yaad). `globalThis` par, taaki route aur pages dono ek hi list dekhein.
+  - Backend tak na pahunche (network, 429, 5xx) to **login nahi mitta**. 15 second ke liye `tg_refresh_wait` cookie, taaki redirect ka chakkar na bane.
+  - Sirf backend ke "token galat" (401/400) par logout.
+- **Test:** ek hi refresh token se `/session/refresh` par 2 request ek saath bheje. Dono ko **same naya token** mila, koi cookie nahi miti, aur naya token baad me bhi chala (200).
+
+### Files
+```
+web/src/lib/compress-image.ts              * photo chhoti karna (dukaan/dish photo bhi isi se)
+web/src/components/photo-uploader.tsx      ~ compress-image use karta hai
+web/src/app/orders/actions.ts              ~ review ke saath photos, addReviewPhotoAction, removeReviewPhotoAction
+web/src/app/orders/[id]/review-form.tsx    ~ photo chunna (3 tak), preview
+web/src/app/orders/[id]/review-photos-editor.tsx  * review ke baad photo jodo/hatao
+web/src/app/orders/[id]/page.tsx           ~ editor + "kuch photo fail" message
+web/src/components/review-photos.tsx       * review ki photos dikhana
+web/src/app/provider/[id]/page.tsx, provider/[id]/reviews/page.tsx, dashboard/reviews/page.tsx  ~ photos
+web/src/lib/orders.ts                      ~ review.id, review.photos
+web/src/lib/refresh.ts                     * ek token ka ek refresh
+web/src/lib/authed.ts, lib/session.ts, app/session/refresh/route.ts  ~ refreshOnce, network par logout nahi
+web/src/i18n/messages/*.ts                 ~ rphoto.* (7 text)
+```
+
+### Tests
+
+Browser (customer `9999999999`):
+1. `http://localhost:3000/orders` → koi **Delivered** order bina review ke kholo.
+2. Stars do, comment likho, **"+"** dabakar 1-3 photo chuno → preview → **Review bhejo**.
+3. "Aapka review" me photos. Ek par **×** → hat jaye. **"+"** se nayi lagao. 3 hone par "+" gayab.
+4. Photo par click → badi photo naye tab me.
+5. `http://localhost:3000/provider/1?tab=reviews` aur provider ke `/dashboard/reviews` par wahi photos.
+6. Badi photo (5-10 MB) chuno → phir bhi lag jaye (browser chhota karta hai).
+
+Logout bug (PowerShell, `backend` folder, backend chalu ho):
+Login karke 15 minute ruko (ya browser DevTools → Application → Cookies me `tg_access` delete karo), phir koi bhi page kholo. Login bana rehna chahiye. Backend band karke page kholo → thodi der "Login" dikhega, backend chalu karne ke 15 second baad wapas login dikhna chahiye (pehle cookies mit jati thi).
+
+Database me refresh tokens dekhna (Prisma Studio):
+```
+npx prisma studio
+```
+`RefreshToken` table: ek hi `familyId` me naya token banta hai aur purana `revokedAt` leta hai. Ek hi second me naya bana aur band hua ho to wahi purana bug tha.
+
+### Galtiyan aur hal
+| Galti | Hal |
+|---|---|
+| Baar-baar logout | `lib/refresh.ts` (upar) |
+| Client component me `photoSrc` galat link de sakta tha (`API_URL` server ka env hai) | Photo ka poora link server par bana kar client ko diya |
+| Node script me `\\d` se `\d` ki jagah `d` likha gaya | `isId()` helper |
+| Bash me `wait` ne background server ka bhi intezaar kiya (atak gaya) | Test me server ke saath `wait` mat lagao |
+
+**Test data:** order #8 par 4 star review, 2 test photo ke saath (Thali, Dal).
+
+## 15. Naye chat me ye paste karo (hamesha aakhri section)
+
+> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) aur Phase 5 (review me photo, baar-baar logout ka bug fix) ho gaye. Ab Phase 6 (har page ka naya design) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.

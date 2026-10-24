@@ -1,34 +1,27 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { API_URL } from "@/lib/api";
-import { clearSession, getRefreshToken, safeNext, setSession } from "@/lib/session";
-
-type RefreshResponse = { accessToken: string; refreshToken: string };
+import { clearSession, getRefreshToken, REFRESH_WAIT_COOKIE, safeNext, setSession } from "@/lib/session";
+import { refreshOnce } from "@/lib/refresh";
 
 export async function GET(request: NextRequest) {
   const next = safeNext(request.nextUrl.searchParams.get("next"));
   const refreshToken = await getRefreshToken();
+  const response = NextResponse.redirect(new URL(next, request.url));
 
   if (refreshToken) {
-    try {
-      const res = await fetch(`${API_URL}/auth/refresh`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken }),
-        cache: "no-store",
-      });
+    // Do request ek saath aayein to bhi backend ko ek hi refresh jata hai (lib/refresh.ts)
+    const result = await refreshOnce(refreshToken);
 
-      if (res.ok) {
-        const data = (await res.json()) as RefreshResponse;
-        await setSession(data.accessToken, data.refreshToken);
-        return NextResponse.redirect(new URL(next, request.url));
-      }
-    } catch {
-      // backend tak nahi pahunche
+    if (result.ok) {
+      await setSession(result.accessToken, result.refreshToken);
+    } else if (result.reason === "network") {
+      // Backend abhi band/restart: login mat mitao. Thodi der "mehmaan" jaisa dikhao,
+      // taaki page baar-baar yahan na aaye (redirect ka chakkar na bane).
+      response.cookies.set(REFRESH_WAIT_COOKIE, "1", { path: "/", maxAge: 15, httpOnly: true, sameSite: "lax" });
+    } else {
+      // Session sach me khatam: cookies hatao, user guest ban jata hai
+      await clearSession();
     }
-    // Refresh nahi hua (session khatam ya backend band): cookies hatao.
-    // Isse redirect ka chakkar (loop) nahi banta, user guest ban jata hai.
-    await clearSession();
   }
 
-  return NextResponse.redirect(new URL(next, request.url));
+  return response;
 }

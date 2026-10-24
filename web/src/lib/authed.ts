@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { API_URL } from "@/lib/api";
-import { ACCESS_COOKIE, REFRESH_COOKIE, setSession, clearSession } from "@/lib/session";
+import { ACCESS_COOKIE, REFRESH_COOKIE, REFRESH_WAIT_COOKIE, setSession, clearSession } from "@/lib/session";
+import { refreshOnce } from "@/lib/refresh";
 
 type Options = {
   mode: "page" | "action";
@@ -15,23 +16,14 @@ export async function refreshInline(): Promise<string | null> {
   const refresh = store.get(REFRESH_COOKIE)?.value;
   if (!refresh) return null;
 
-  try {
-    const res = await fetch(`${API_URL}/auth/refresh`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken: refresh }),
-      cache: "no-store",
-    });
-    if (!res.ok) {
-      await clearSession();
-      return null;
-    }
-    const data = await res.json();
-    await setSession(data.accessToken, data.refreshToken);
-    return data.accessToken as string;
-  } catch {
+  // Ek token ka ek hi refresh (lib/refresh.ts). Backend tak na pahunche to login mat mitao.
+  const result = await refreshOnce(refresh);
+  if (!result.ok) {
+    if (result.reason === "invalid") await clearSession();
     return null;
   }
+  await setSession(result.accessToken, result.refreshToken);
+  return result.accessToken;
 }
 
 async function call(path: string, token: string, opts: Options) {
@@ -60,7 +52,8 @@ export async function authedFetch(path: string, opts: Options): Promise<Response
 
   if (!access) {
     if (opts.mode === "page") {
-      if (store.get(REFRESH_COOKIE)) redirect(`/session/refresh?next=${next}`);
+      // Abhi-abhi backend tak nahi pahunche the (REFRESH_WAIT_COOKIE): dobara chakkar mat lagao
+      if (store.get(REFRESH_COOKIE) && !store.get(REFRESH_WAIT_COOKIE)) redirect(`/session/refresh?next=${next}`);
       redirect(`/login?next=${next}`);
     }
     access = await refreshInline();

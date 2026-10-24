@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getReviews } from "@/lib/reviews";
 import { formatDate } from "@/lib/format";
 import { getT } from "@/i18n/server";
+import ReviewPhotos from "@/components/review-photos";
 import { RatingLine, Stars } from "@/components/stars";
 
 const LIMIT = 20;
@@ -52,6 +53,7 @@ export default async function ProviderReviewsPage({
               <span className="text-xs text-gray-500">{formatDate(r.createdAt, locale)}</span>
             </div>
             {r.comment && <p className="mt-2">{r.comment}</p>}
+                <ReviewPhotos photos={r.photos} customer={r.customer} />
             <p className="mt-2 text-xs text-gray-500">{t("reviews.customer", { name: r.customer })}</p>
           </li>
         ))}

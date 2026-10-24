@@ -505,4 +505,11 @@ export const en: Record<MessageKey, string> = {
   "rev.photoAlt": "Review photo by {name}",
   "shop.infoPay": "Payment",
   "plan.dayCol": "Day",
+  "rphoto.add": "Add food photos (up to 3, optional)",
+  "rphoto.hint": "Real photos help other customers decide.",
+  "rphoto.remove": "Remove photo",
+  "rphoto.max": "You can add up to 3 photos per review.",
+  "rphoto.preview": "Photo {n}",
+  "rphoto.open": "Open full photo",
+  "rphoto.someFailed": "Your review was posted, but some photos didn't upload. Please add them again below.",
 };

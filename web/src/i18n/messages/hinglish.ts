@@ -503,6 +503,13 @@ export const hinglish = {
   "rev.photoAlt": "{name} ki review photo",
   "shop.infoPay": "Payment",
   "plan.dayCol": "Din",
+  "rphoto.add": "Khane ki photo jodo (3 tak, optional)",
+  "rphoto.hint": "Asli photo se dusre customers ko chunne me madad milti hai.",
+  "rphoto.remove": "Photo hatao",
+  "rphoto.max": "Ek review me 3 photo tak hi laga sakte ho.",
+  "rphoto.preview": "Photo {n}",
+  "rphoto.open": "Photo badi karke dekho",
+  "rphoto.someFailed": "Review chala gaya, par kuch photo nahi lag payi. Neeche se dobara lagao.",
 } as const;
 
 export type MessageKey = keyof typeof hinglish;

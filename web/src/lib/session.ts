@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { API_URL } from "@/lib/api";
 export const ACCESS_COOKIE = "tg_access";
 export const REFRESH_COOKIE = "tg_refresh";
+// Backend tak refresh nahi pahuncha: 15 second tak dobara refresh route par mat bhejo
+export const REFRESH_WAIT_COOKIE = "tg_refresh_wait";
 
 const ACCESS_MAX_AGE = 14 * 60; // JWT 15 min ka hai, cookie thoda pehle khatam
 const REFRESH_MAX_AGE = 30 * 24 * 60 * 60; // 30 din
@@ -54,7 +56,10 @@ export async function getSession(): Promise<Session> {
   const access = store.get(ACCESS_COOKIE)?.value;
   const refresh = store.get(REFRESH_COOKIE)?.value;
 
-  if (!access) return refresh ? { status: "refresh" } : { status: "guest" };
+  if (!access) {
+    if (!refresh || store.get(REFRESH_WAIT_COOKIE)) return { status: "guest" };
+    return { status: "refresh" };
+  }
 
   try {
     const res = await fetch(`${API_URL}/me`, {
