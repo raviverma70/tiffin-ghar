@@ -3,7 +3,8 @@ import type { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { validate } from "../middleware/validate.js";
 import { requireAuth, type AuthedRequest } from "../middleware/auth.js";
-import { publicLimiter, reviewLimiter } from "../middleware/rateLimit.js";
+import { publicLimiter, reviewLimiter, uploadLimiter } from "../middleware/rateLimit.js";
+import { BAD_IMAGE, readImage, removeFile, saveImage } from "../lib/images.js";
 import { createReviewSchema, listReviewsQuery } from "../validators/review.js";
 
 const router = Router();
@@ -93,6 +94,7 @@ router.get("/providers/:id/reviews", publicLimiter, async (req, res, next) => {
         rating: true,
         comment: true,
         createdAt: true,
+        photos: { select: { id: true, url: true }, orderBy: { id: "asc" } },
         user: { select: { phone: true } },
       },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
@@ -115,12 +117,71 @@ router.get("/providers/:id/reviews", publicLimiter, async (req, res, next) => {
         rating: r.rating,
         comment: r.comment,
         createdAt: r.createdAt,
+        photos: r.photos,
         customer: maskPhone(r.user.phone),
       })),
       total: provider.ratingCount,
       page,
       limit,
     });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// ---------- Review ke saath photo (customer apne review par, 3 tak) ----------
+
+const MAX_REVIEW_PHOTOS = 3;
+
+router.post(
+  "/reviews/:id/photos",
+  requireAuth,
+  uploadLimiter,
+  readImage,
+  async (req: AuthedRequest, res, next) => {
+    try {
+      const id = parseId(req.params.id);
+      if (!id) return res.status(404).json({ error: "Review nahi mila" });
+
+      // Sirf apna review
+      const review = await prisma.review.findFirst({
+        where: { id, userId: req.auth!.userId },
+        select: { id: true, _count: { select: { photos: true } } },
+      });
+      if (!review) return res.status(404).json({ error: "Review nahi mila" });
+      if (review._count.photos >= MAX_REVIEW_PHOTOS) {
+        return res.status(400).json({ error: "Ek review me 3 se zyada photo nahi" });
+      }
+
+      const url = await saveImage(req.body as Buffer);
+      if (!url) return res.status(400).json({ error: BAD_IMAGE });
+
+      const photo = await prisma.reviewPhoto.create({
+        data: { reviewId: review.id, url },
+        select: { id: true, url: true },
+      });
+      res.status(201).json(photo);
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+router.delete("/reviews/:id/photos/:photoId", requireAuth, async (req: AuthedRequest, res, next) => {
+  try {
+    const id = parseId(req.params.id);
+    const photoId = parseId(req.params.photoId);
+    if (!id || !photoId) return res.status(404).json({ error: "Photo nahi mili" });
+
+    const photo = await prisma.reviewPhoto.findFirst({
+      where: { id: photoId, reviewId: id, review: { userId: req.auth!.userId } },
+      select: { id: true, url: true },
+    });
+    if (!photo) return res.status(404).json({ error: "Photo nahi mili" });
+
+    await prisma.reviewPhoto.delete({ where: { id: photo.id } });
+    await removeFile(photo.url);
+    res.json({ message: "Photo hata di" });
   } catch (e) {
     next(e);
   }

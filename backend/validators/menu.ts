@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { mealTime } from "./common.js";
 
 export const createMenuItemSchema = z.object({
   name: z.string().trim().min(2, "Dish ka naam likho").max(80),
@@ -11,6 +12,7 @@ export const createMenuItemSchema = z.object({
   dayOfWeek: z.number().int().min(0).max(6).nullable().optional(),
   isVeg: z.boolean().optional(),
   isAvailable: z.boolean().optional(),
+  mealTime: mealTime.optional(),
 });
 
 export const updateMenuItemSchema = createMenuItemSchema

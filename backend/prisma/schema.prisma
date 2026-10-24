@@ -11,6 +11,7 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
 enum Role {
   CUSTOMER
   PROVIDER
@@ -18,16 +19,18 @@ enum Role {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  phone     String   @unique
-  name      String?
-  role      Role     @default(CUSTOMER)
-  createdAt DateTime @default(now())
-    refreshTokens RefreshToken[]
-      provider      Provider?
-        orders Order[]
-          reviews       Review[]
-            language      String?
+  id            Int            @id @default(autoincrement())
+  phone         String         @unique
+  name          String?
+  role          Role           @default(CUSTOMER)
+  createdAt     DateTime       @default(now())
+  refreshTokens RefreshToken[]
+  provider      Provider?
+  orders        Order[]
+  reviews       Review[]
+  language      String?
+  subscriptions Subscription[]
+  favourites    Favourite[]
 }
 
 model Otp {
@@ -37,10 +40,10 @@ model Otp {
   expiresAt DateTime
   attempts  Int      @default(0)
   createdAt DateTime @default(now())
-  
 
   @@index([phone])
 }
+
 model RefreshToken {
   id        Int       @id @default(autoincrement())
   userId    Int
@@ -54,6 +57,7 @@ model RefreshToken {
   @@index([userId])
   @@index([familyId])
 }
+
 enum ProviderStatus {
   PENDING
   APPROVED
@@ -61,44 +65,61 @@ enum ProviderStatus {
 }
 
 model Provider {
-  id          Int            @id @default(autoincrement())
-  userId      Int            @unique
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  shopName    String
-  city        String
-  address     String
-  pincode     String
-  fssaiNumber String?
-  status      ProviderStatus @default(PENDING)
-  isOpen      Boolean        @default(false)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-    menuItems   MenuItem[]
-      orders Order[]
-        photoUrl    String?
-  ratingSum   Int            @default(0)
-  ratingCount Int            @default(0)
-  reviews     Review[]
+  id            Int                @id @default(autoincrement())
+  userId        Int                @unique
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shopName      String
+  city          String
+  address       String
+  pincode       String
+  fssaiNumber   String?
+  status        ProviderStatus     @default(PENDING)
+  isOpen        Boolean            @default(false)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  menuItems     MenuItem[]
+  orders        Order[]
+  photoUrl      String?
+  ratingSum     Int                @default(0)
+  ratingCount   Int                @default(0)
+  reviews       Review[]
+  // Dukaan ki jagah (paas wali dukaan upar dikhane ke liye) aur mohalla
+  latitude      Float?
+  longitude     Float?
+  area          String?
+  plans         SubscriptionPlan[]
+  subscriptions Subscription[]
+  favourites    Favourite[]
 
   @@index([city])
 }
+
+// Din ka kaun sa khana: nashta, dopahar, raat
+enum MealTime {
+  BREAKFAST
+  LUNCH
+  DINNER
+}
+
 model MenuItem {
-  id          Int      @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   providerId  Int
-  provider    Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  provider    Provider    @relation(fields: [providerId], references: [id], onDelete: Cascade)
   name        String
   description String?
   pricePaise  Int
   dayOfWeek   Int?
-  isVeg       Boolean  @default(true)
-  isAvailable Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-    orderItems OrderItem[]
-      photoUrl    String?
+  isVeg       Boolean     @default(true)
+  isAvailable Boolean     @default(true)
+  mealTime    MealTime    @default(LUNCH)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+  photoUrl    String?
 
   @@index([providerId])
 }
+
 enum OrderStatus {
   PLACED
   ACCEPTED
@@ -127,11 +148,10 @@ model Order {
   items           OrderItem[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
-    review          Review?
+  review          Review?
 
   @@index([userId, createdAt])
   @@index([providerId, status])
-    
 }
 
 model OrderItem {
@@ -144,17 +164,107 @@ model OrderItem {
   pricePaise Int
   quantity   Int
 }
+
 model Review {
-  id         Int      @id @default(autoincrement())
-  orderId    Int      @unique
-  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id         Int           @id @default(autoincrement())
+  orderId    Int           @unique
+  order      Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
   userId     Int
-  user       User     @relation(fields: [userId], references: [id])
+  user       User          @relation(fields: [userId], references: [id])
   providerId Int
-  provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  provider   Provider      @relation(fields: [providerId], references: [id], onDelete: Cascade)
   rating     Int
   comment    String?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime      @default(now())
+  photos     ReviewPhoto[]
 
   @@index([providerId, createdAt])
+}
+
+// Review ke saath customer ki photo (ek review me 3 tak)
+model ReviewPhoto {
+  id        Int      @id @default(autoincrement())
+  reviewId  Int
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  url       String
+  createdAt DateTime @default(now())
+
+  @@index([reviewId])
+}
+
+// Dukaan wale ka subscription plan: kitne din, kaun se time, daam. Har din ka menu PlanDayMenu me
+model SubscriptionPlan {
+  id            Int            @id @default(autoincrement())
+  providerId    Int
+  provider      Provider       @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  name          String
+  description   String?
+  days          Int
+  mealTimes     MealTime[]
+  pricePaise    Int
+  isVeg         Boolean        @default(true)
+  // Naya plan band rehta hai, poora din-wise menu bharne ke baad hi chalu ho sakta hai
+  isActive      Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  dayMenus      PlanDayMenu[]
+  subscriptions Subscription[]
+
+  @@index([providerId])
+}
+
+// Plan ke ek din ke ek time ki dishes (Din 3, LUNCH: Dal, Chawal, 4 Roti)
+model PlanDayMenu {
+  id       Int              @id @default(autoincrement())
+  planId   Int
+  plan     SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  day      Int
+  mealTime MealTime
+  dishes   String[]
+
+  @@unique([planId, day, mealTime])
+}
+
+enum SubscriptionStatus {
+  REQUESTED
+  ACTIVE
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+// Customer ka liya hua plan. Naam, din, time aur daam us waqt ke copy hote hain (plan baad me badle to bhi)
+model Subscription {
+  id              Int                @id @default(autoincrement())
+  userId          Int
+  user            User               @relation(fields: [userId], references: [id])
+  providerId      Int
+  provider        Provider           @relation(fields: [providerId], references: [id])
+  planId          Int
+  plan            SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Restrict)
+  planName        String
+  days            Int
+  mealTimes       MealTime[]
+  pricePaise      Int
+  startDate       DateTime           @db.Date
+  deliveryAddress String
+  note            String?
+  status          SubscriptionStatus @default(REQUESTED)
+  paymentMethod   PaymentMethod      @default(COD)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([providerId, status])
+}
+
+// Customer ki pasandida dukaan
+model Favourite {
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  providerId Int
+  provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([userId, providerId])
 }

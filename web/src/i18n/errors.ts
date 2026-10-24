@@ -76,6 +76,46 @@ const ERROR_KEYS: Record<string, MessageKey> = {
   "Bahut zyada reviews, thodi der baad try karo": "err.tooManyReviews",
   "Bahut zyada photo upload, thodi der baad try karo": "err.tooManyUploads",
   "Bhasha galat hai": "err.langBad",
+  "Khane ka time galat hai": "err.mealTimeBad",
+  "Location sahi nahi hai": "err.locationBad",
+  "Location India ke andar honi chahiye": "err.locationIndia",
+  "Area likho": "err.areaRequired",
+  "Area 60 akshar se chhota rakho": "err.areaMax",
+  "Location ke liye latitude aur longitude dono bhejo": "err.locationPair",
+  "Sort galat hai": "err.sortBad",
+  "Paas ki dukaan ke liye location chahiye": "err.locationNeeded",
+  "Plan ka naam likho": "err.planName",
+  "Plan ka naam 60 akshar se chhota rakho": "err.planNameMax",
+  "Jaankari 300 akshar se chhoti rakho": "err.planDescMax",
+  "Plan kitne din ka hai, number me daalo": "err.planDaysNumber",
+  "Plan 1 se 31 din ka ho sakta hai": "err.planDaysRange",
+  "Kam se kam ek khane ka time chuno": "err.mealTimesMin",
+  "Ek time do baar mat chuno": "err.mealTimesDup",
+  "Plan ka daam ₹1,00,000 se zyada nahi ho sakta": "err.planPriceMax",
+  "Dish ka naam 60 akshar se chhota rakho": "err.dishNameMax",
+  "Din number me daalo": "err.dayNumber",
+  "Din galat hai": "err.dayBad",
+  "Dishes ki list bhejo": "err.dishesList",
+  "Har time me kam se kam ek dish likho": "err.dishesMin",
+  "Ek time me 12 se zyada dishes nahi": "err.dishesMax",
+  "Menu ki list bhejo": "err.menuList",
+  "Menu bahut lamba hai": "err.menuTooLong",
+  "Shuru ki tareekh chuno": "err.startDate",
+  "Shuru ki tareekh aaj se 30 din ke andar chuno": "err.startDateRange",
+  "Ek dukaan me 20 se zyada plans nahi ho sakte": "err.plansMax",
+  "Plan nahi mila": "err.planNotFound",
+  "Din plan ke dino se zyada hai": "err.dayOutOfPlan",
+  "Ye khane ka time is plan me nahi hai": "err.mealTimeNotInPlan",
+  "Ek din ka ek time do baar bheja hai": "err.dayMealDup",
+  "Chalu plan ka menu adhoora nahi chhod sakte, pehle plan band karo": "err.activePlanIncomplete",
+  "Plan chalu karne se pehle har din ka menu bharo": "err.planMenuIncomplete",
+  "Subscription nahi mila": "err.subscriptionNotFound",
+  "Aap apni hi dukaan ka plan nahi le sakte": "err.ownPlan",
+  "Ab ye subscription cancel nahi ho sakta, dukaan wale se baat karo": "err.subscriptionCannotCancel",
+  "100 se zyada pasandida dukaanein nahi rakh sakte": "err.favouritesMax",
+  "Review nahi mila": "err.reviewNotFound",
+  "Ek review me 3 se zyada photo nahi": "err.reviewPhotosMax",
+  "Photo nahi mili": "err.photoNotFound",
 };
 
 const PSTATUS: Record<string, MessageKey> = {
@@ -88,6 +128,14 @@ const PSTATUS: Record<string, MessageKey> = {
   CANCELLED: "pstatus.CANCELLED",
 };
 
+const SSTATUS: Record<string, MessageKey> = {
+  REQUESTED: "sstatus.REQUESTED",
+  ACTIVE: "sstatus.ACTIVE",
+  COMPLETED: "sstatus.COMPLETED",
+  REJECTED: "sstatus.REJECTED",
+  CANCELLED: "sstatus.CANCELLED",
+};
+
 export function translateError(t: Translator, message: string): string {
   const key = ERROR_KEYS[message];
   if (key) return t(key);
@@ -98,6 +146,14 @@ export function translateError(t: Translator, message: string): string {
     const from = PSTATUS[m[1]];
     const to = PSTATUS[m[2]];
     if (from && to) return t("err.statusConflict", { from: t(from), to: t(to) });
+  }
+
+  // "Subscription abhi ACTIVE hai, isse REJECTED nahi kar sakte"
+  const s = /^Subscription abhi ([A-Z_]+) hai, isse ([A-Z_]+) nahi kar sakte$/.exec(message);
+  if (s) {
+    const from = SSTATUS[s[1]];
+    const to = SSTATUS[s[2]];
+    if (from && to) return t("err.subscriptionStatusConflict", { from: t(from), to: t(to) });
   }
 
   return message;

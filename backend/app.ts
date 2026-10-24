@@ -15,6 +15,10 @@ import reviewsRouter from "./routes/reviews.js";
 import photosRouter from "./routes/photos.js";
 import { UPLOAD_DIR } from "./lib/uploads.js";
 import meRouter from "./routes/me.js";
+import plansRouter from "./routes/plans.js";
+import providerPlansRouter from "./routes/providerPlans.js";
+import subscriptionsRouter from "./routes/subscriptions.js";
+import providerSubscriptionsRouter from "./routes/providerSubscriptions.js";
 
 export const app = express();
 
@@ -32,9 +36,13 @@ const api = express.Router();
 api.use("/auth", authRouter);
 api.use("/providers/me/menu", menuRouter);
 api.use("/providers/me/orders", providerOrdersRouter);
+api.use("/providers/me/plans", providerPlansRouter);
+api.use("/providers/me/subscriptions", providerSubscriptionsRouter);
 api.use("/providers", providersRouter);
 api.use("/providers", publicProvidersRouter);
 api.use("/orders", ordersRouter);
+api.use("/plans", plansRouter);
+api.use("/subscriptions", subscriptionsRouter);
 api.use("/admin", adminRouter);
 api.use(reviewsRouter);
 api.use("/providers", photosRouter);
