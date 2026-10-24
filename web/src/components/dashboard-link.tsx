@@ -14,7 +14,10 @@ export default async function DashboardLink() {
     role === "ADMIN" ? t("nav.admin") : role === "PROVIDER" ? t("nav.dashboard") : t("nav.startShop");
 
   return (
-    <Link href={href} className="text-orange-600">
+    <Link
+      href={href}
+      className="rounded-full px-3 py-1.5 font-semibold text-orange-700 transition hover:bg-orange-50"
+    >
       {label}
     </Link>
   );

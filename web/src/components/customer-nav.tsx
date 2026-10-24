@@ -14,7 +14,7 @@ const TABS: { key: Tab; href: string; label: MessageKey; icon: string }[] = [
 export default async function CustomerNav({ active }: { active: Tab }) {
   const { t } = await getT();
   return (
-    <nav className="-mx-1 flex gap-2 overflow-x-auto whitespace-nowrap px-1 pb-1">
+    <nav className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto whitespace-nowrap px-1 pb-1">
       {TABS.map((tab) => (
         <Link
           key={tab.key}

@@ -192,7 +192,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Par
           <div className="mt-12">
             <h2 className="text-2xl font-bold text-gray-900">🗓️ {t("home.plansTitle")}</h2>
             <p className="mt-1 text-sm text-gray-600">{t("home.plansSub")}</p>
-            <ul className="-mx-4 mt-4 flex snap-x gap-4 overflow-x-auto px-4 pb-3">
+            <ul className="no-scrollbar -mx-4 mt-4 flex snap-x gap-4 overflow-x-auto px-4 pb-3">
               {plans.map((p) => (
                 <li key={p.id} className="flex">
                   <PlanCard plan={p} />

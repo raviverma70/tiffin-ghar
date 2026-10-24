@@ -21,7 +21,7 @@ export default async function DashNav({
   const { t } = await getT();
 
   return (
-    <nav className="-mx-1 flex items-center gap-2 overflow-x-auto whitespace-nowrap border-b px-1 pb-3">
+    <nav className="no-scrollbar -mx-1 flex items-center gap-2 overflow-x-auto whitespace-nowrap border-b px-1 pb-3">
       <Link href="/" className="mr-2 text-orange-600">
         &larr; {t("nav.website")}
       </Link>
@@ -31,8 +31,8 @@ export default async function DashNav({
           href={tab.href}
           className={
             tab.key === active
-              ? "rounded bg-orange-600 px-3 py-1 text-white"
-              : "rounded border px-3 py-1 hover:bg-orange-50"
+              ? "rounded-full bg-orange-600 px-4 py-1.5 text-sm font-semibold text-white shadow-sm"
+              : "rounded-full border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-orange-50"
           }
         >
           {t(tab.label)}

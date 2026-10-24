@@ -27,7 +27,7 @@ export default async function DashboardReviewsPage({
   const data = p ? await getReviews(p.id, page, LIMIT) : null;
 
   return (
-    <main className="mx-auto max-w-2xl p-6">
+    <main className="mx-auto max-w-3xl px-4 py-6">
       <DashNav active="reviews" />
 
       <h1 className="mt-6 text-2xl font-bold">{t("reviews.title")}</h1>
@@ -44,7 +44,7 @@ export default async function DashboardReviewsPage({
 
           <ul className="mt-6 space-y-3">
             {data.items.map((r) => (
-              <li key={r.id} className="rounded-xl border bg-white p-4">
+              <li key={r.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
                 <div className="flex items-center justify-between gap-4">
                   <Stars value={r.rating} />
                   <span className="text-xs text-gray-500">{formatDate(r.createdAt, locale)}</span>

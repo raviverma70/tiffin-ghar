@@ -510,6 +510,21 @@ export const hinglish = {
   "rphoto.preview": "Photo {n}",
   "rphoto.open": "Photo badi karke dekho",
   "rphoto.someFailed": "Review chala gaya, par kuch photo nahi lag payi. Neeche se dobara lagao.",
+  "step.PLACED": "Order diya",
+  "step.ACCEPTED": "Accept hua",
+  "step.PREPARING": "Ban raha",
+  "step.OUT_FOR_DELIVERY": "Raaste me",
+  "step.DELIVERED": "Pahuncha",
+  "step.REJECTED": "Mana hua",
+  "step.CANCELLED": "Cancel hua",
+  "orders.emptyCta": "Dukaanein dekho",
+  "orders.view": "Dekho",
+  "orders.status": "Order ka haal",
+  "orders.itemsTitle": "Kya mangaya",
+  "orders.deliveryTitle": "Delivery",
+  "footer.links": "Jaldi pahuncho",
+  "footer.copy": "© {year} Tiffin Ghar. Ghar jaisa khana, har roz.",
+  "login.secure": "OTP sirf aapke phone ke liye hai, kisi ko mat batao.",
 } as const;
 
 export type MessageKey = keyof typeof hinglish;

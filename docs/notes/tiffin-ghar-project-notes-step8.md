@@ -15,9 +15,10 @@ Ye file `tiffin-ghar-project-notes-step7.md` (aur usse pehle ki files) ke **baad
 | Push | Phase 1, 2 GitHub par | `main` = `0a8a688` |
 | Phase 3: front page (location, sort, area, naya card, plans ki row) | ho gaya, push hua | `4679e6b` |
 | Phase 4: dukaan ke tabs, plan lena, mere subscriptions, favourite, share | ho gaya, push hua | `ec03c2d` |
-| Phase 5: review me photo + baar-baar logout ka bug fix | ho gaya, browser test pass, push hua | Phase 5 commit |
+| Phase 5: review me photo + baar-baar logout ka bug fix | ho gaya, push hua | `5eb37e1` |
+| Phase 6: naya design (status ke rang, timeline, header, footer, login, font) | ho gaya, browser test pass (PC + phone), push hua | Phase 6 commit |
 
-**Agla:** Phase 6 (har page ka naya design). Phase 3 section 12, Phase 4 section 13, Phase 5 section 14 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
+**Agla:** website ke 6 phase poore. Ab Mobile Step 3 (OTP login) se mobile app aage. Phase 3 section 12, Phase 4 section 13, Phase 5 section 14, Phase 6 section 15 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
 
 ## 2. Faisle jo tay hue
 
@@ -429,7 +430,7 @@ GitHub: https://github.com/raviverma70/tiffin-ghar (account `raviverma70`). Repo
 1. ~~Phase 3, front page~~: ho gaya (section 12).
 2. ~~Phase 4, dukaan ka page + subscription lena~~: ho gaya (section 13).
 3. ~~Phase 5, review me photo~~: ho gaya (section 14).
-4. **Phase 6, naya design har page par:** Mere orders ke rangin status badge, font, spacing, khali list ke achhe message.
+4. ~~Phase 6, naya design~~: ho gaya (section 15).
 5. **Mobile Step 3 se 9:** OTP login, dukaan list (location `expo-location` se), dukaan + cart, order, mere orders, review, provider dashboard.
 6. Baad me: dish ki rating, milti-julti dukaanein, map par dukaan, Razorpay, wallet (RBI expert), notifications.
 7. Test data: `Student Plan` (id 2) aur `7 din Lunch + Dinner` (id 1), customer ka subscription #1. Na chahiye to dashboard se hatao.
@@ -628,6 +629,67 @@ npx prisma studio
 
 **Test data:** order #8 par 4 star review, 2 test photo ke saath (Thali, Dal).
 
-## 15. Naye chat me ye paste karo (hamesha aakhri section)
+## 15. Phase 6: naya design (rang, font, status badge, timeline)
 
-> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) aur Phase 5 (review me photo, baar-baar logout ka bug fix) ho gaye. Ab Phase 6 (har page ka naya design) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.
+### Kya badla
+- **Ek jaise status ke rang, har jagah** (`lib/orders.ts` → `ORDER_STATUS_STYLE`, `ORDER_STATUS_ICON`):
+  🧾 Naya = neela, 👍 Accept = halka neela, 🍳 Ban raha = peela, 🛵 Raaste me = baingani, ✅ Pahuncha = hara, ✖ Mana/Cancel = laal/grey. Component: `components/order-status.tsx` → `OrderStatusBadge`.
+- **Mere orders** (`/orders`): har order ka card: dukaan, `#id · tareekh`, dishes ki ek line, rangin badge, bada total, "Dekho →". Khali ho to 🍱 aur "Dukaanein dekho" button.
+- **Order detail** (`/orders/[id]`): upar badge, **timeline** (Order diya → Accept → Ban raha → Raaste me → Pahuncha; ho chuke hare ✓, abhi wala orange chamakta hai), phir "Kya mangaya" aur "Delivery" ke alag card. Mana/cancel par timeline ki jagah rangin dabba. Review ka hissa halke orange card me.
+- Badge aur timeline ke liye **chhote naam** (`step.*`: "Ban raha", "Raaste me"), lamba text ("Order mil gaya, dukaan ke jawab ka intezaar") detail page par.
+- **Provider ke orders:** rangin badge, naya order neeli border se alag dikhe, customer ki jaankari grey dabbe me, "Accept" hara aur "Mana" laal button, filter chips gol.
+- **Dashboard, menu, reviews, admin:** sab card `rounded-2xl` + halki shadow, khula/band hara/grey, admin ke stats rangin dabbon me icon ke saath, dukaan ke status ka rangin badge.
+- **Header:** gol pills wale links, phone number ka chhota badge. **Phone par** 2 line: upar logo, neeche links ki scroll hone wali line (pehle har link alag line me aata tha).
+- **Footer:** logo, tagline, "Jaldi pahuncho" links (Home, Mere orders, Subscriptions, Dukaan kholo), `© saal Tiffin Ghar`.
+- **Login:** safed card, Customer/Dukaan wala ka segmented tab, upar 🍱/🏪, neeche "OTP kisi ko mat batao".
+- **Order form:** chuni hui dish orange border se highlight, bade +/− button, phone par "Order karo" wala dabba neeche chipka rehta hai.
+- **Font aur padhne me aasani** (`globals.css`): heading thode kase hue aur do barabar line me tootte hain, Hindi par zyada line-height, keyboard focus ka orange outline, select karne par orange rang, scroll wali lines me scrollbar chhupa (`no-scrollbar`).
+- Dukaan ke page ke tabs sirf PC par chipakte hain (phone par header ooncha hai).
+
+### Files
+```
+web/src/app/globals.css                   ~ base styles, Hindi line-height, no-scrollbar
+web/src/lib/orders.ts                     ~ ORDER_STATUS_STYLE, ORDER_STATUS_ICON, ORDER_STEPS, STEP_KEY
+web/src/components/order-status.tsx       * OrderStatusBadge, OrderTimeline
+web/src/components/site-header.tsx, site-footer.tsx, language-switcher.tsx, dashboard-link.tsx, dash-nav.tsx, customer-nav.tsx  ~
+web/src/app/orders/page.tsx, orders/[id]/page.tsx  ~
+web/src/app/dashboard/page.tsx, dashboard/orders/page.tsx, dashboard/menu/page.tsx, dashboard/reviews/page.tsx  ~
+web/src/app/admin/page.tsx                ~ (sirf Hinglish, niyam ke hisaab se)
+web/src/app/login/page.tsx                ~
+web/src/app/provider/[id]/order-form.tsx, provider/[id]/page.tsx, provider/[id]/reviews/page.tsx, app/page.tsx  ~
+web/src/i18n/messages/*.ts                ~ step.*, orders.emptyCta/view/status/itemsTitle/deliveryTitle, footer.links/copy, login.secure
+```
+
+### Tests (browser)
+1. `http://localhost:3000/orders` → rangin badge wale card. Koi order na ho to 🍱 aur "Dukaanein dekho".
+2. Koi chalu order kholo → timeline (hare ✓, orange abhi wala). Provider se status badlo → 15 second me timeline aage badhe.
+3. Cancel/mana wala order → timeline ki jagah rangin dabba.
+4. Provider (`8888888888`) → `/dashboard/orders` → naya order neeli border, Accept hara, Mana laal.
+5. Admin (`6666666666`) → `/admin` → rangin stats aur badge.
+6. Logout → `/login` → card, segmented tab.
+7. **Phone size:** Chrome DevTools (F12) → phone icon (Toggle device) → iPhone → header 2 line me, chips side me scroll, scrollbar nahi.
+8. Header me bhasha हिन्दी karke dekho: Hindi text ki line ki doori zyada, kat-ta nahi.
+
+Check commands:
+```
+cd "C:\Users\Ravi Kumar patel\tiffin-ghar\web"
+```
+```
+npx tsc --noEmit
+```
+```
+npx eslint src
+```
+
+### Galtiyan aur hal
+| Galti | Hal |
+|---|---|
+| Phone par header ke links ek ke neeche ek | Phone par 2 line: logo, phir scroll hone wali links ki line |
+| Scroll wali chips ke neeche grey scrollbar | `@utility no-scrollbar` (`globals.css`) |
+| Customer ke status text badge ke liye bahut lambe | Chhote naam `step.*` |
+| `admin/page.tsx` me text badalne wala script match nahi hua | File CRLF (Windows line ending) me thi; script ab CRLF sambhalta hai |
+| Dukaan ke tabs phone par header ke peeche chhupte | Sirf `sm:` (PC) par sticky |
+
+## 16. Naye chat me ye paste karo (hamesha aakhri section)
+
+> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) Phase 5 (review me photo, baar-baar logout ka bug fix) aur Phase 6 (naya design: status ke rang, order timeline, header/footer, login) ho gaye. Ab mobile app Step 3 (OTP login) se aage badhana hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.

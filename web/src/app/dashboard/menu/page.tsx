@@ -30,7 +30,7 @@ export default async function MenuPage({
   const editItem = edit && items ? items.find((i) => String(i.id) === edit) : undefined;
 
   return (
-    <main className="mx-auto max-w-2xl p-6">
+    <main className="mx-auto max-w-3xl px-4 py-6">
       <DashNav active="menu" />
 
       <h1 className="mt-6 text-2xl font-bold">{t("menu.title")}</h1>
@@ -76,7 +76,7 @@ export default async function MenuPage({
               </h3>
         <ul className="mt-3 space-y-3">
           {group.map((item) => (
-            <li key={item.id} className="rounded-xl border bg-white p-4 shadow-sm">
+            <li key={item.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="font-semibold">

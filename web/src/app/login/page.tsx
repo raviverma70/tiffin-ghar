@@ -36,30 +36,38 @@ export default async function LoginPage({
 
   const tab = (r: "customer" | "provider") =>
     r === role
-      ? "flex-1 rounded bg-orange-600 px-3 py-2 text-center font-semibold text-white"
-      : "flex-1 rounded border px-3 py-2 text-center hover:bg-orange-50";
+      ? "flex-1 rounded-lg bg-white px-3 py-2 text-center font-semibold text-orange-700 shadow-sm"
+      : "flex-1 rounded-lg px-3 py-2 text-center font-medium text-gray-600 hover:text-gray-900";
 
   return (
-    <main className="mx-auto max-w-md p-6">
-      <Link href="/" className="text-orange-600">
+    <main className="mx-auto max-w-md px-4 py-8">
+      <Link href="/" className="text-sm text-orange-700 hover:underline">
         &larr; {t("nav.back")}
       </Link>
-      <h1 className="mt-4 text-3xl font-bold">{t("login.title")}</h1>
 
-      <div className="mt-4 flex gap-2">
-        <Link href={`/login?as=customer${keep}`} className={tab("customer")}>
-          {t("login.tabCustomer")}
-        </Link>
-        <Link href={`/login?as=provider${keep}`} className={tab("provider")}>
-          {t("login.tabProvider")}
-        </Link>
+      <div className="mt-4 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+        <p className="text-4xl" aria-hidden>
+          {role === "provider" ? "🏪" : "🍱"}
+        </p>
+        <h1 className="mt-2 text-3xl font-bold text-gray-900">{t("login.title")}</h1>
+
+        <div className="mt-4 flex gap-1 rounded-xl bg-gray-100 p-1">
+          <Link href={`/login?as=customer${keep}`} className={tab("customer")} aria-current={role === "customer" ? "page" : undefined}>
+            {t("login.tabCustomer")}
+          </Link>
+          <Link href={`/login?as=provider${keep}`} className={tab("provider")} aria-current={role === "provider" ? "page" : undefined}>
+            {t("login.tabProvider")}
+          </Link>
+        </div>
+
+        <p className="mt-4 text-gray-600">
+          {role === "provider" ? t("login.introProvider") : t("login.introCustomer")}
+        </p>
+
+        <LoginForm key={role} next={target} />
+
+        <p className="mt-5 border-t border-gray-100 pt-4 text-xs text-gray-500">🔒 {t("login.secure")}</p>
       </div>
-
-      <p className="mt-4 text-gray-600">
-        {role === "provider" ? t("login.introProvider") : t("login.introCustomer")}
-      </p>
-
-      <LoginForm key={role} next={target} />
     </main>
   );
 }

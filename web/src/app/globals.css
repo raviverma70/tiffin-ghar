@@ -16,4 +16,51 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+@layer base {
+  /* Heading thode kase hue, lambi line do barabar hisson me tootti hai */
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Hindi (Devanagari) ke akshar ooche hote hain: thodi zyada line height aur letter-spacing nahi */
+  html[lang="hi"] body {
+    line-height: 1.7;
+  }
+  html[lang="hi"] h1,
+  html[lang="hi"] h2,
+  html[lang="hi"] h3 {
+    letter-spacing: 0;
+    line-height: 1.35;
+  }
+
+  /* Keyboard se chalane walon ke liye saaf focus */
+  :focus-visible {
+    outline: 2px solid #ea580c;
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: #fed7aa;
+    color: #7c2d12;
+  }
+}
+
+/* Side me scroll hone wali chips/tabs ki line: scroll chale, par scrollbar na dikhe */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }

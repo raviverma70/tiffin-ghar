@@ -122,7 +122,7 @@ export default async function ProviderPage({
       </div>
 
       {/* Tabs */}
-      <nav className="sticky top-[57px] z-10 -mx-4 mt-5 flex gap-1 overflow-x-auto border-b border-gray-200 bg-[#fffaf5]/95 px-4 backdrop-blur">
+      <nav className="no-scrollbar z-10 -mx-4 mt-5 sm:sticky sm:top-[57px] flex gap-1 overflow-x-auto border-b border-gray-200 bg-[#fffaf5]/95 px-4 backdrop-blur">
         {TABS.map((k) => (
           <Link
             key={k}

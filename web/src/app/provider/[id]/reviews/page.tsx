@@ -47,7 +47,7 @@ export default async function ProviderReviewsPage({
 
       <ul className="mt-6 space-y-3">
         {data.items.map((r) => (
-          <li key={r.id} className="rounded border bg-white p-4">
+          <li key={r.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between gap-4">
               <Stars value={r.rating} />
               <span className="text-xs text-gray-500">{formatDate(r.createdAt, locale)}</span>

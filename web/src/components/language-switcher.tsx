@@ -23,7 +23,7 @@ export default function LanguageSwitcher({ locale }: { locale: Locale }) {
           router.refresh();
         });
       }}
-      className="rounded border bg-white px-2 py-1 text-sm"
+      className="rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:border-orange-300 focus:border-orange-500"
     >
       {LOCALES.map((l) => (
         <option key={l} value={l}>

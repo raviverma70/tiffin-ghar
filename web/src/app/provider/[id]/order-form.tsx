@@ -50,8 +50,11 @@ export default function OrderForm({
     <div>
       <ul className="mt-4 space-y-3">
         {items.map((item) => (
-          <li key={item.id} className="flex gap-4 rounded-xl border bg-white p-3 shadow-sm">
-            <Thumb src={item.photo} alt={item.name} className="h-20 w-20 shrink-0 rounded-lg" />
+          <li
+            key={item.id}
+            className={`flex gap-4 rounded-2xl border bg-white p-3 shadow-sm transition ${(qty[item.id] ?? 0) > 0 ? "border-orange-300 ring-2 ring-orange-100" : "border-gray-200"}`}
+          >
+            <Thumb src={item.photo} alt={item.name} className="h-24 w-24 shrink-0 rounded-xl" />
 
             <div className="flex flex-1 items-start justify-between gap-3">
               <div>
@@ -75,16 +78,16 @@ export default function OrderForm({
                   <button
                     type="button"
                     onClick={() => change(item.id, -1)}
-                    className="h-8 w-8 rounded-full border hover:bg-orange-50"
+                    className="h-9 w-9 rounded-full border border-gray-300 text-lg font-semibold text-gray-700 hover:bg-orange-50"
                     aria-label={t("of.less")}
                   >
                     -
                   </button>
-                  <span className="w-6 text-center">{qty[item.id] ?? 0}</span>
+                  <span className="w-6 text-center font-semibold" aria-live="polite">{qty[item.id] ?? 0}</span>
                   <button
                     type="button"
                     onClick={() => change(item.id, 1)}
-                    className="h-8 w-8 rounded-full bg-orange-600 text-white hover:bg-orange-700"
+                    className="h-9 w-9 rounded-full bg-orange-600 text-lg font-semibold text-white shadow-sm hover:bg-orange-700"
                     aria-label={t("of.more")}
                   >
                     +
@@ -97,11 +100,11 @@ export default function OrderForm({
       </ul>
 
       {!loggedIn && (
-        <p className="mt-6 rounded-xl border bg-white p-4">
+        <p className="mt-6 rounded-2xl border border-orange-200 bg-orange-50 p-4 text-gray-800">
           {t("of.loginFirst")}{" "}
           <Link
             href={`/login?next=${encodeURIComponent(`/provider/${providerId}`)}`}
-            className="text-orange-600"
+            className="font-semibold text-orange-700 underline"
           >
             {t("of.loginButton")}
           </Link>
@@ -109,7 +112,7 @@ export default function OrderForm({
       )}
 
       {loggedIn && items.length > 0 && (
-        <form action={action} className="mt-6 space-y-3 rounded-xl border bg-white p-4 shadow-sm">
+        <form action={action} className="sticky bottom-3 mt-6 space-y-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-lg sm:static sm:shadow-sm">
           <input type="hidden" name="providerId" value={providerId} />
           <input type="hidden" name="items" value={JSON.stringify(lines)} />
 
@@ -131,7 +134,7 @@ export default function OrderForm({
             maxLength={250}
             rows={3}
             placeholder={t("of.addrPh")}
-            className="w-full rounded-lg border px-3 py-2"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
           />
           <input
             name="note"
@@ -139,12 +142,12 @@ export default function OrderForm({
             onChange={(e) => setNote(e.target.value)}
             maxLength={200}
             placeholder={t("of.notePh")}
-            className="w-full rounded-lg border px-3 py-2"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
           />
 
           <button
             disabled={pending || lines.length === 0}
-            className="w-full rounded-lg bg-orange-600 px-4 py-2.5 font-medium text-white hover:bg-orange-700 disabled:opacity-60"
+            className="w-full rounded-xl bg-orange-600 px-4 py-3 font-semibold text-white shadow-sm hover:bg-orange-700 disabled:opacity-60"
           >
             {pending ? t("common.loading") : t("of.submit")}
           </button>
