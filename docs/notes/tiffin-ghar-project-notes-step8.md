@@ -16,9 +16,10 @@ Ye file `tiffin-ghar-project-notes-step7.md` (aur usse pehle ki files) ke **baad
 | Phase 3: front page (location, sort, area, naya card, plans ki row) | ho gaya, push hua | `4679e6b` |
 | Phase 4: dukaan ke tabs, plan lena, mere subscriptions, favourite, share | ho gaya, push hua | `ec03c2d` |
 | Phase 5: review me photo + baar-baar logout ka bug fix | ho gaya, push hua | `5eb37e1` |
-| Phase 6: naya design (status ke rang, timeline, header, footer, login, font) | ho gaya, browser test pass (PC + phone), push hua | Phase 6 commit |
+| Phase 6: naya design (status ke rang, timeline, header, footer, login, font) | ho gaya, push hua | `6fb124a` |
+| Mobile Step 3: OTP login, login yaad rakhna, logout, bhasha sync | ho gaya, phone par test pass, push hua | Mobile Step 3 commit |
 
-**Agla:** website ke 6 phase poore. Ab Mobile Step 3 (OTP login) se mobile app aage. Phase 3 section 12, Phase 4 section 13, Phase 5 section 14, Phase 6 section 15 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
+**Agla:** Mobile Step 4 (dukaan list, location `expo-location` se). Mobile Step 3 section 16 me. Phase 3 section 12, Phase 4 section 13, Phase 5 section 14, Phase 6 section 15 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
 
 ## 2. Faisle jo tay hue
 
@@ -690,6 +691,75 @@ npx eslint src
 | `admin/page.tsx` me text badalne wala script match nahi hua | File CRLF (Windows line ending) me thi; script ab CRLF sambhalta hai |
 | Dukaan ke tabs phone par header ke peeche chhupte | Sirf `sm:` (PC) par sticky |
 
-## 16. Naye chat me ye paste karo (hamesha aakhri section)
+## 16. Mobile Step 3: OTP login
 
-> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) Phase 5 (review me photo, baar-baar logout ka bug fix) aur Phase 6 (naya design: status ke rang, order timeline, header/footer, login) ho gaye. Ab mobile app Step 3 (OTP login) se aage badhana hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.
+### Kya bana
+- **Login screen** (`mobile/src/app/login.tsx`): pehle mobile number (sirf 10 ank, 6-9 se shuru, galat ho to "Sahi 10 digit ka mobile number daalo"), phir **OTP**. OTP box bada hai, ank fail kar dikhte hain, aur phone ka "OTP apne aap bharo" (`oneTimeCode`) chalta hai.
+- **"OTP dobara bhejo"** 60 second ka countdown ke saath (backend bhi 60 second me ek hi OTP bhejta hai). "Number badlo" button.
+- Login hote hi tokens phone ke **secure storage** me (`tg_access`, `tg_refresh`), aur jis screen se aaye the wahin wapas.
+- **App band karke kholo, login bana rehta hai** (`AuthProvider` app khulte hi `/me` se user lata hai).
+- **Session khatam** (refresh token bekaar) ho to app apne aap "guest" ban jata hai (`onSessionEnded`).
+- **Backend band** ho to login nahi mitta: "Server se jud nahi paye, aapka login bana hai" aur "Dobara try karo".
+- **Logout:** backend par refresh token band, phir phone se hatao (backend na mile tab bhi phone se hat jata hai).
+- **Bhasha sync** (website jaisa): phone par bhasha pehle se chuni ho to wo database me jaati hai, warna database wali bhasha phone par lag jaati hai.
+- Home par upar **AccountBar**: guest ko "Order aur plan ke liye login karo" + Login button, login wale ko "👋 Namaste! 9999999999 se login hai" + Logout. Provider ko note: "Dukaan ka dashboard abhi website par hai".
+- **Reusable UI** (`src/components/ui.tsx`): `Button` (orange / outline, loading), `Field` (label + input), `ErrorText`, `Card`. Rang `src/lib/theme.ts` me (website jaise). Aage ki saari screens yahi use karengi.
+
+### Files (`mobile/src/`)
+```
+lib/auth.ts                 * sendOtp, verifyOtp (tokens save), fetchMe, logout, PHONE_RE, OTP_RE
+lib/theme.ts                * rang aur kone (website jaise)
+auth/provider.tsx           * AuthProvider, useAuth (loading / guest / offline / user)
+app/login.tsx               * login screen
+app/_layout.tsx             ~ AuthProvider, header ke rang
+app/index.tsx               ~ upar AccountBar
+components/AccountBar.tsx   * login / logout ka hissa
+components/ui.tsx           * Button, Field, ErrorText, Card
+i18n/provider.tsx, index.ts ~ syncAfterLogin, useSyncLanguage
+web/src/i18n/messages/*.ts  ~ login.resend, login.resendIn, login.sent, mlogin.* (mobile bhi yahi padhta hai)
+```
+Backend me koi badlav nahi (login API pehle se tokens JSON me deti hai).
+
+### Tests (phone par, Expo Go)
+
+Backend aur app chalao:
+```
+cd "C:\Users\Ravi Kumar patel\tiffin-ghar\backend"
+```
+```
+npm run dev
+```
+```
+cd "C:\Users\Ravi Kumar patel\tiffin-ghar\mobile"
+```
+```
+npx expo start --clear
+```
+1. QR scan → home par "Order aur plan ke liye login karo" + **Login**.
+2. Login → `12345` likho → button band rehta hai. `9999999999` → **OTP bhejo**.
+3. OTP backend ke terminal me (`OTP for 9999999999: ......`) → daalo → **Login karo** → home par "👋 Namaste! 9999999999 se login hai".
+4. Galat OTP → chuni bhasha me "OTP galat hai".
+5. "OTP dobara bhejo" par 60 se ulti ginti, phir dabta hai.
+6. Expo Go poori tarah band karke kholo → login bana rahe.
+7. Backend band karke `r` (reload) → "Server se jud nahi paye, aapka login bana hai" → backend chalu → **Dobara try karo** → wapas login dikhe.
+8. **Logout** → guest. Website par bhi us number ka purana session alag hai (alag token family), wo chalta rahega.
+9. Bhasha: app me हिन्दी chuno, phir logout aur login → website par us user ki bhasha bhi हिन्दी (header me) dikhe.
+10. `8888888888` se login → "Dukaan ka dashboard abhi website par hai".
+
+Check commands (`mobile` folder):
+```
+npx tsc --noEmit
+```
+```
+npx expo-doctor
+```
+
+### Galtiyan aur hal
+| Galti | Hal |
+|---|---|
+| `tsc`: `"/login"` route type me nahi (typed routes) | Typed routes ki file `.expo/types/router.d.ts` sirf `npx expo start` banata hai. Nayi screen ke baad ek baar `npx expo start` chalao, phir `tsc` |
+| `npx expo lint` pehli baar ESLint install karne ka sawaal poochta hai | Abhi nahi chalaya. Chahiye to baad me `npx expo lint` chala kar "yes" |
+
+## 17. Naye chat me ye paste karo (hamesha aakhri section)
+
+> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) Phase 5 (review me photo, baar-baar logout ka bug fix) Phase 6 (naya design: status ke rang, order timeline, header/footer, login) aur Mobile Step 3 (OTP login) ho gaye. Ab Mobile Step 4 (dukaan list, location) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.

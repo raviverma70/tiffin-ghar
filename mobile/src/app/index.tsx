@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 import { API_URL } from "@/lib/config";
 import { translateError, useT } from "@/i18n";
 import { LanguagePicker } from "@/components/LanguagePicker";
+import { AccountBar } from "@/components/AccountBar";
 
 // Test screen: backend se dukaanein aur bhasha badalna. Step 4 me asli dukaan list banegi.
 const CITY = "Prayagraj";
@@ -24,6 +25,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
+      <AccountBar />
       <LanguagePicker />
 
       {error ? (

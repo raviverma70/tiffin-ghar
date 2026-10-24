@@ -16,7 +16,12 @@ function savedLocale(): Locale {
   }
 }
 
-type Ctx = { locale: Locale; t: Translator; setLocale: (locale: Locale) => void };
+type Ctx = {
+  locale: Locale;
+  t: Translator;
+  setLocale: (locale: Locale) => void;
+  syncAfterLogin: (serverLanguage: string | null) => void;
+};
 
 const I18nContext = createContext<Ctx | null>(null);
 
@@ -35,7 +40,30 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       .catch(() => {});
   }, []);
 
-  const value = useMemo(() => ({ locale, t: makeT(messagesFor(locale)), setLocale }), [locale, setLocale]);
+  // Login ke baad (web ke syncLanguageAfterLogin jaisa): phone par bhasha pehle se chuni hai to
+  // database me bhejo, warna database wali bhasha phone par lagao.
+  const syncAfterLogin = useCallback((serverLanguage: string | null) => {
+    let phoneChoice: string | null = null;
+    try {
+      phoneChoice = SecureStore.getItem(LOCALE_KEY);
+    } catch {
+      phoneChoice = null;
+    }
+
+    if (isLocale(phoneChoice)) {
+      if (phoneChoice !== serverLanguage) {
+        api("/me/language", { method: "PATCH", body: { language: phoneChoice }, auth: true }).catch(() => {});
+      }
+    } else if (isLocale(serverLanguage)) {
+      setLocaleState(serverLanguage);
+      SecureStore.setItemAsync(LOCALE_KEY, serverLanguage).catch(() => {});
+    }
+  }, []);
+
+  const value = useMemo(
+    () => ({ locale, t: makeT(messagesFor(locale)), setLocale, syncAfterLogin }),
+    [locale, setLocale, syncAfterLogin],
+  );
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
@@ -56,4 +84,8 @@ export function useLocale(): Locale {
 
 export function useSetLocale(): (locale: Locale) => void {
   return useI18n().setLocale;
+}
+
+export function useSyncLanguage(): (serverLanguage: string | null) => void {
+  return useI18n().syncAfterLogin;
 }

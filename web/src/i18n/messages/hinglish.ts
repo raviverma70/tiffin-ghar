@@ -525,6 +525,13 @@ export const hinglish = {
   "footer.links": "Jaldi pahuncho",
   "footer.copy": "© {year} Tiffin Ghar. Ghar jaisa khana, har roz.",
   "login.secure": "OTP sirf aapke phone ke liye hai, kisi ko mat batao.",
+  "login.resend": "OTP dobara bhejo",
+  "login.resendIn": "{s} second baad dobara bhej sakte ho",
+  "login.sent": "OTP bhej diya",
+  "mlogin.welcome": "Namaste! {phone} se login hai",
+  "mlogin.guest": "Order aur plan ke liye login karo",
+  "mlogin.offline": "Server se jud nahi paye. Aapka login bana hai, dobara try karo.",
+  "mlogin.providerNote": "Dukaan ka dashboard abhi website par hai. Mobile me jaldi aayega.",
 } as const;
 
 export type MessageKey = keyof typeof hinglish;

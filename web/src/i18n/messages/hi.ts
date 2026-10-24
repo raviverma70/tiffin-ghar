@@ -527,4 +527,11 @@ export const hi: Record<MessageKey, string> = {
   "footer.links": "जल्दी पहुँचें",
   "footer.copy": "© {year} टिफ़िन घर। घर जैसा खाना, हर रोज़।",
   "login.secure": "OTP सिर्फ़ आपके फ़ोन के लिए है, किसी को न बताएँ।",
+  "login.resend": "OTP दोबारा भेजें",
+  "login.resendIn": "{s} सेकंड बाद दोबारा भेज सकते हैं",
+  "login.sent": "OTP भेज दिया",
+  "mlogin.welcome": "नमस्ते! {phone} से लॉगिन है",
+  "mlogin.guest": "ऑर्डर और प्लान के लिए लॉगिन करें",
+  "mlogin.offline": "सर्वर से जुड़ नहीं पाए। आपका लॉगिन बना है, दोबारा कोशिश करें।",
+  "mlogin.providerNote": "दुकान का डैशबोर्ड अभी वेबसाइट पर है। मोबाइल में जल्दी आएगा।",
 };

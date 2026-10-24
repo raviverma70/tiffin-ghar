@@ -527,4 +527,11 @@ export const en: Record<MessageKey, string> = {
   "footer.links": "Quick links",
   "footer.copy": "© {year} Tiffin Ghar. Home-style food, every day.",
   "login.secure": "Your OTP is only for you. Never share it.",
+  "login.resend": "Resend OTP",
+  "login.resendIn": "You can resend in {s} seconds",
+  "login.sent": "OTP sent",
+  "mlogin.welcome": "Hello! Logged in as {phone}",
+  "mlogin.guest": "Log in to order and get plans",
+  "mlogin.offline": "Couldn't reach the server. You're still logged in, please try again.",
+  "mlogin.providerNote": "The shop dashboard is on the website for now. It's coming to the app soon.",
 };
