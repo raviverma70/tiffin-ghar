@@ -1,27 +1,75 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Stack, useLocalSearchParams } from "expo-router";
-import { getShop, type ShopDetail } from "@/lib/shops";
+import { ActivityIndicator, Image, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { Stack, router, useLocalSearchParams } from "expo-router";
+import { getFavouriteIds, getShop, setFavourite, type ShopDetail } from "@/lib/shops";
 import { photoSrc } from "@/lib/photo";
 import { colors, radius } from "@/lib/theme";
-import { translateError, useT } from "@/i18n";
+import { useAuth } from "@/auth/provider";
+import { translateError, useT, type MessageKey } from "@/i18n";
 import { RatingBadge } from "@/components/cards";
-import { Card, ErrorText } from "@/components/ui";
+import { Chip } from "@/components/Chip";
+import { ErrorText } from "@/components/ui";
+import { MenuTab } from "@/components/shop/MenuTab";
+import { PlansTab } from "@/components/shop/PlansTab";
+import { InfoTab, ReviewsTab } from "@/components/shop/ReviewsTab";
 
-// Dukaan ki screen: abhi upar ka hissa. Menu, order, plans aur reviews agle step (Mobile Step 5) me.
+type Tab = "menu" | "plans" | "reviews" | "info";
+const TABS: { key: Tab; label: MessageKey }[] = [
+  { key: "menu", label: "shop.tabMenu" },
+  { key: "plans", label: "shop.tabPlans" },
+  { key: "reviews", label: "shop.tabReviews" },
+  { key: "info", label: "shop.tabInfo" },
+];
+
+// Dukaan ki poori screen: header, ♥, share, aur 4 tabs (website jaisi)
 export default function ShopScreen() {
   const t = useT();
+  const { user } = useAuth();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [shop, setShop] = useState<ShopDetail | null>(null);
   const [error, setError] = useState("");
+  const [tab, setTab] = useState<Tab | null>(null);
+  const [fav, setFav] = useState(false);
 
   useEffect(() => {
     if (!id) return;
     getShop(id).then((res) => {
-      if (res.ok) setShop(res.data);
-      else setError(res.status === 404 ? t("shop.notFound") : translateError(t, res.error));
+      if (res.ok) {
+        setShop(res.data);
+        // Band dukaan par seedha Plans (wahan kuch dikhne layak ho)
+        setTab((cur) => cur ?? (!res.data.isOpen && res.data.planCount > 0 ? "plans" : "menu"));
+      } else setError(res.status === 404 ? t("shop.notFound") : translateError(t, res.error));
     });
   }, [id, t]);
+
+  // Login ho to: ye dukaan pasand me hai?
+  useEffect(() => {
+    if (!user || !id) return;
+    getFavouriteIds().then((res) => {
+      if (res.ok) setFav(res.data.items.some((f) => String(f.id) === id));
+    });
+  }, [user, id]);
+
+  async function toggleFav() {
+    if (!shop) return;
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    const next = !fav;
+    setFav(next); // turant dikhao, fail ho to wapas
+    const res = await setFavourite(shop.id, next);
+    if (!res.ok) setFav(!next);
+  }
+
+  async function share() {
+    if (!shop) return;
+    try {
+      await Share.share({ message: t("share.text", { shop: shop.shopName }) });
+    } catch {
+      // customer ne band kar diya
+    }
+  }
 
   if (error) {
     return (
@@ -31,7 +79,7 @@ export default function ShopScreen() {
     );
   }
 
-  if (!shop) {
+  if (!shop || !tab) {
     return (
       <View style={[styles.page, { alignItems: "center", justifyContent: "center" }]}>
         <ActivityIndicator color={colors.orange} />
@@ -43,8 +91,9 @@ export default function ShopScreen() {
   const place = [shop.area, shop.city].filter(Boolean).join(", ");
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
+    <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
       <Stack.Screen options={{ title: shop.shopName }} />
+
       <View style={styles.card}>
         {photo ? (
           <Image source={{ uri: photo }} style={styles.photo} resizeMode="cover" />
@@ -54,10 +103,27 @@ export default function ShopScreen() {
           </View>
         )}
         <View style={{ padding: 16, gap: 8 }}>
-          <Text style={styles.title}>{shop.shopName}</Text>
-          <Text style={styles.muted}>
-            {place} - {shop.pincode}
-          </Text>
+          <View style={styles.titleRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.title}>{shop.shopName}</Text>
+              <Text style={styles.muted}>
+                {place} - {shop.pincode}
+              </Text>
+            </View>
+            <Pressable onPress={share} accessibilityRole="button" accessibilityLabel={t("share.button")} style={styles.round}>
+              <Text style={styles.roundText}>↗</Text>
+            </Pressable>
+            <Pressable
+              onPress={toggleFav}
+              accessibilityRole="button"
+              accessibilityLabel={fav ? t("fav.remove") : t("fav.add")}
+              accessibilityState={{ selected: fav }}
+              style={[styles.round, fav && { borderColor: "#fecaca" }]}
+            >
+              <Text style={[styles.roundText, { color: fav ? "#ef4444" : colors.muted }]}>{fav ? "♥" : "♡"}</Text>
+            </Pressable>
+          </View>
+
           <View style={styles.row}>
             <RatingBadge rating={shop.rating} count={shop.ratingCount} />
             <Text style={[styles.status, { color: shop.isOpen ? colors.green : colors.muted }]}>
@@ -72,20 +138,44 @@ export default function ShopScreen() {
         </View>
       </View>
 
-      <Card style={{ marginTop: 14 }}>
-        <Text style={styles.soon}>🛠️ {t("mshop.soon")}</Text>
-      </Card>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabs}>
+        {TABS.map((k) => (
+          <Chip
+            key={k.key}
+            label={k.key === "plans" && shop.planCount > 0 ? `${t(k.label)} (${shop.planCount})` : t(k.label)}
+            active={tab === k.key}
+            onPress={() => setTab(k.key)}
+          />
+        ))}
+      </ScrollView>
+
+      {tab === "menu" && <MenuTab shopId={shop.id} isOpen={shop.isOpen} />}
+      {tab === "plans" && <PlansTab shopId={shop.id} />}
+      {tab === "reviews" && <ReviewsTab shopId={shop.id} />}
+      {tab === "info" && <InfoTab shop={shop} />}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { padding: 16, backgroundColor: colors.bg, flexGrow: 1 },
+  page: { padding: 16, paddingBottom: 40, backgroundColor: colors.bg, flexGrow: 1 },
   card: { backgroundColor: "#fff", borderRadius: radius.xl, borderWidth: 1, borderColor: colors.border, overflow: "hidden" },
   photo: { width: "100%", height: 190 },
   noPhoto: { backgroundColor: "#ffedd5", alignItems: "center", justifyContent: "center" },
+  titleRow: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
   title: { fontSize: 24, fontWeight: "800", color: colors.text },
-  muted: { fontSize: 14, color: colors.muted },
+  muted: { fontSize: 14, color: colors.muted, marginTop: 2 },
+  round: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  roundText: { fontSize: 20, color: colors.text },
   row: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 },
   status: { fontSize: 13, fontWeight: "600" },
   tag: {
@@ -98,5 +188,5 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     overflow: "hidden",
   },
-  soon: { fontSize: 15, color: colors.textSoft, lineHeight: 22 },
+  tabs: { gap: 8, paddingVertical: 16 },
 });

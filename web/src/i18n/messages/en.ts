@@ -537,4 +537,8 @@ export const en: Record<MessageKey, string> = {
   "mhome.blocked": "Location is turned off. Allow location for Tiffin Ghar (Expo Go) in your phone settings, or pick a city below.",
   "mhome.openSettings": "Open settings",
   "mshop.soon": "Menu, ordering, plans and reviews come to the app in the next step. Until then, use the website.",
+  "mshop.planSoon": "Taking a plan in the app comes in the next step. You can take it on the website for now.",
+  "mshop.placed": "Order placed!",
+  "mshop.placedText": "Order #{id}, total {total} (cash on delivery). The status will change once the shop accepts.",
+  "mshop.backHome": "Go to home",
 };

@@ -18,9 +18,10 @@ Ye file `tiffin-ghar-project-notes-step7.md` (aur usse pehle ki files) ke **baad
 | Phase 5: review me photo + baar-baar logout ka bug fix | ho gaya, push hua | `5eb37e1` |
 | Phase 6: naya design (status ke rang, timeline, header, footer, login, font) | ho gaya, push hua | `6fb124a` |
 | Mobile Step 3: OTP login, login yaad rakhna, logout, bhasha sync | ho gaya, push hua | `097947a` |
-| Mobile Step 4: dukaan list, phone ki location, chips, area, plans ki row | ho gaya, push hua | Mobile Step 4 commit |
+| Mobile Step 4: dukaan list, phone ki location, chips, area, plans ki row | ho gaya, push hua | `a728aed` |
+| Mobile Step 5: dukaan ki screen (tabs, ♥, share), cart aur order | ho gaya, phone par test pass, push hua | Mobile Step 5 commit |
 
-**Agla:** Mobile Step 5 (dukaan ki screen: menu, cart, order; plans aur reviews). Mobile Step 3 section 16, Step 4 section 17 me. Phase 3 section 12, Phase 4 section 13, Phase 5 section 14, Phase 6 section 15 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
+**Agla:** Mobile Step 6 (plan lena, mere orders + live status, mere subscriptions). Mobile Step 3 section 16, Step 4 section 17, Step 5 section 18 me. Phase 3 section 12, Phase 4 section 13, Phase 5 section 14, Phase 6 section 15 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
 
 ## 2. Faisle jo tay hue
 
@@ -827,6 +828,84 @@ npx expo-doctor
 | Nayi screen `shop/[id]` ka type `tsc` me nahi | Pehle ek baar `npx expo start` (typed routes banata hai), phir `tsc` |
 | "Location hatao" ke baad "location nahi mili" dikhta | `clear()` ab `idle` karta hai (button dikhe) |
 
-## 18. Naye chat me ye paste karo (hamesha aakhri section)
+## 18. Mobile Step 5: dukaan ki poori screen, cart aur order
 
-> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) Phase 5 (review me photo, baar-baar logout ka bug fix) Phase 6 (naya design: status ke rang, order timeline, header/footer, login) Mobile Step 3 (OTP login) aur Mobile Step 4 (dukaan list, phone ki location, plans ki row) ho gaye. Ab Mobile Step 5 (dukaan ki screen: menu, cart, order, plans, reviews) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.
+### Kya bana
+- **Dukaan ki screen** (`mobile/src/app/shop/[id].tsx`): photo, naam, area, rating, khula/band, badges, **↗ Share** (phone ka share menu: WhatsApp waghera) aur **♡ / ♥ favourite** (login na ho to login screen). Neeche 4 tabs: **Aaj ka menu · Plans (2) · Reviews · Jaankari**. Band dukaan par seedha Plans tab.
+- **Aaj ka menu** (`components/shop/MenuTab.tsx`): Nashta / Lunch / Dinner ke hisaab se alag, har dish par photo, veg/non-veg ka nishaan, daam, aur **− / +** (20 tak). Chuni hui dish orange. Neeche "Aapka order": kitne item aur total, **pata**, note, **Order karo · ₹120**. Login nahi to "Order dene ke liye login zaroori hai" + Login.
+- **Order ho gaya** (`app/order-placed.tsx`): ✅, "Order #19, total ₹120 (COD)", "Home par jao".
+- **Plans** (`components/shop/PlansTab.tsx`): har plan ka card (din, time, daam, "₹120 roz"), "▸ Har din ka menu dekho" dabane par din-wise list. Plan lena agle step me.
+- **Reviews** (`components/shop/ReviewsTab.tsx`): stars, tareekh (bhasha ke hisaab se), comment, **photos** (dabao to badi), "Aur purane" se aur reviews.
+- **Jaankari:** jagah, khula/band, bharosa, veg, plans, payment.
+
+### Files (`mobile/src/`)
+```
+lib/shops.ts               ~ getTodayMenu, getShopPlans, getReviews, placeOrder, getFavouriteIds, setFavourite
+lib/api.ts                 ~ method me "PUT" (favourite ke liye)
+lib/meals.ts               ~ MEAL_KEY
+lib/days.ts                * DAY_KEY, formatDate
+app/shop/[id].tsx          ~ poori screen
+app/order-placed.tsx       *
+components/shop/MenuTab.tsx, PlansTab.tsx, ReviewsTab.tsx (InfoTab bhi)  *
+web/src/i18n/messages/*.ts ~ mshop.planSoon, mshop.placed, mshop.placedText, mshop.backHome
+```
+Backend me koi badlav nahi.
+
+### API check (maine kiya)
+Test backend (5001) par: dukaan, aaj ka menu (2 item), 2 plans (14 aur 30 din-menu), 4 reviews (ek me 2 photo). Bina login favourite/order → 401. Login ke saath favourite juda, order #19 bana (2 × ₹60 = ₹120, daam backend se), phir cancel kiya. Chhote pate par "Delivery ka poora pata likho".
+
+### Tests (phone, Expo Go)
+```
+cd "C:\Users\Ravi Kumar patel\tiffin-ghar\backend"
+```
+```
+npm run dev
+```
+```
+cd "C:\Users\Ravi Kumar patel\tiffin-ghar\mobile"
+```
+```
+npx expo start --clear
+```
+1. Home se **Sharma Ghar Ka Tiffin** dabao → dukaan ki screen.
+2. **↗** dabao → share menu. **♡** dabao (login na ho to login screen) → ♥ laal. Website ke `/favourites` par bhi dikhe.
+3. **Aaj ka menu:** + dabao → dish orange, neeche total badle. Pata likho → **Order karo** → "Order ho gaya!".
+4. Website par provider (`8888888888`) ke `/dashboard/orders` me wo order aaye.
+5. **Plans** → "Har din ka menu dekho" → din-wise list.
+6. **Reviews** → photo wala review, photo dabao → badi. **Jaankari** dekho.
+7. Provider se dukaan **band** karo → app me dukaan kholo → seedha Plans tab, menu me "dukaan abhi band hai".
+8. Bhasha हिन्दी / English karke dekho.
+
+Check (`mobile` folder, nayi screen ke baad pehle ek baar `npx expo start`):
+```
+npx tsc --noEmit
+```
+```
+npx expo-doctor
+```
+
+### Galtiyan aur hal
+| Galti | Hal |
+|---|---|
+| `tsc`: favourite ka `PUT` method mobile `api()` me nahi tha | `Options.method` me `"PUT"` joda |
+| `` t(`meal.${meal}`) `` type error (string, MessageKey nahi) | `MEAL_KEY` map |
+
+**Test data:** customer `9999999999` ka order #19 (cancel hua).
+
+### Bug fix: phone par spinner chalta rehta tha, login bhi nahi hota tha
+- **Wajah:** PC ka IP badal gaya tha (PC phone ke hotspot "Redmi 9 Power" par aaya, naya IP `10.133.123.9`). App `mobile/.env` ke **purane IP** par backend dhundh raha tha. Expo app ko naye IP se khol deta hai, isliye app to khulta tha par backend nahi milta tha. Phone ka `fetch` galat IP par bahut der tak atka rehta hai, isliye spinner chalta rehta tha.
+- **Jaanch:** backend chal raha tha (`0.0.0.0:5000`), Windows Firewall me Node ko Public network par bhi ijazat thi, aur PC ke Wi-Fi IP par backend 200 de raha tha. Matlab dikkat sirf purane IP ki thi.
+- **Hal 1** (`mobile/src/lib/config.ts`): development me backend ka IP **Expo ke IP se apne aap** (`Constants.expoConfig.hostUri`), port 5000. IP badle tab bhi `.env` badalna nahi padta. `.env` ab sirf `--tunnel` ke liye.
+- **Hal 2** (`mobile/src/lib/api.ts`): har request par **15 second ki seema** (`AbortController`). Jawab na aaye to "Server se jud nahi paye" dikhta hai, spinner nahi atakta.
+- **Hal 3** (`mobile/src/app/index.tsx`): error ke neeche (sirf development me) `API: http://...`, taaki pata chale app kis address par dhundh raha hai.
+- `mobile/README.md` me "Server se jud nahi paye?" ke steps.
+
+Check: PC ka IP dekhne ke liye
+```
+ipconfig
+```
+Phone ke browser me `http://<PC-ka-IP>:5000/api/v1/providers/cities` khule to app bhi chalega.
+
+## 19. Naye chat me ye paste karo (hamesha aakhri section)
+
+> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) Phase 5 (review me photo, baar-baar logout ka bug fix) Phase 6 (naya design: status ke rang, order timeline, header/footer, login) Mobile Step 3 (OTP login) aur Mobile Step 4 (dukaan list, phone ki location, plans ki row) ho gaye. Mobile Step 5 (dukaan ki screen: tabs, cart, order) bhi ho gaya. Ab Mobile Step 6 (plan lena, mere orders + live status, mere subscriptions) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.

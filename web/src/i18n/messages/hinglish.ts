@@ -535,6 +535,10 @@ export const hinglish = {
   "mhome.blocked": "Location band hai. Phone ki Settings me Tiffin Ghar (Expo Go) ke liye location chalu karo, ya neeche shehar chuno.",
   "mhome.openSettings": "Settings kholo",
   "mshop.soon": "Menu, order, plans aur reviews app me agle step me aayenge. Tab tak website par dekh sakte ho.",
+  "mshop.planSoon": "Plan lena app me agle step me aayega. Abhi website se le sakte ho.",
+  "mshop.placed": "Order ho gaya!",
+  "mshop.placedText": "Order #{id}, total {total} (COD, delivery par). Dukaan wale ke accept karne par status badlega.",
+  "mshop.backHome": "Home par jao",
 } as const;
 
 export type MessageKey = keyof typeof hinglish;

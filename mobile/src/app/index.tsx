@@ -14,6 +14,7 @@ import {
 import { router } from "expo-router";
 import { getAreas, getCities, getPlans, getShops, type PlanCard as Plan, type Shop } from "@/lib/shops";
 import { useLocation } from "@/lib/useLocation";
+import { API_URL } from "@/lib/config";
 import { colors, radius } from "@/lib/theme";
 import { translateError, useT } from "@/i18n";
 import { AccountBar } from "@/components/AccountBar";
@@ -188,6 +189,8 @@ export default function Home() {
           )}
 
           {error ? <ErrorText>{error}</ErrorText> : null}
+          {/* Development me: app kis address par backend dhundh raha hai (galat IP turant dikhe) */}
+          {error && __DEV__ ? <Text style={styles.small}>API: {API_URL}</Text> : null}
         </>
       )}
     </View>

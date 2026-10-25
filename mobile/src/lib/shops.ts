@@ -97,3 +97,73 @@ export type ShopDetail = {
 export function getShop(id: string) {
   return api<ShopDetail>(`/providers/${encodeURIComponent(id)}`);
 }
+
+// ---------- Dukaan ki screen (Step 5) ----------
+
+export type MenuItem = {
+  id: number;
+  name: string;
+  description: string | null;
+  pricePaise: number;
+  isVeg: boolean;
+  mealTime: MealTime;
+  photoUrl: string | null;
+};
+
+// Aaj ka menu (sirf khuli dukaan; band ho to 404)
+export function getTodayMenu(id: string) {
+  return api<{ day: number; items: MenuItem[] }>(`/providers/${encodeURIComponent(id)}/menu`);
+}
+
+export type ShopPlan = {
+  id: number;
+  name: string;
+  description: string | null;
+  days: number;
+  mealTimes: MealTime[];
+  pricePaise: number;
+  isVeg: boolean;
+  dayMenus: { day: number; mealTime: MealTime; dishes: string[] }[];
+};
+
+export function getShopPlans(id: string) {
+  return api<{ items: ShopPlan[] }>(`/providers/${encodeURIComponent(id)}/plans`);
+}
+
+export type Review = {
+  id: number;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  customer: string;
+  photos: { id: number; url: string }[];
+};
+
+export function getReviews(id: string, page = 1) {
+  return api<{ items: Review[]; total: number }>(
+    `/providers/${encodeURIComponent(id)}/reviews?${qs({ page: String(page), limit: "10" })}`,
+  );
+}
+
+// Order (COD). Daam backend database se leta hai, hum sirf item aur quantity bhejte hain.
+export function placeOrder(body: {
+  providerId: number;
+  items: { menuItemId: number; quantity: number }[];
+  deliveryAddress: string;
+  note?: string;
+}) {
+  return api<{ id: number; totalPaise: number }>("/orders", { method: "POST", body, auth: true });
+}
+
+// ---------- Pasandida ----------
+
+export function getFavouriteIds() {
+  return api<{ items: { id: number }[] }>("/me/favourites", { auth: true });
+}
+
+export function setFavourite(providerId: number, favourite: boolean) {
+  return api<{ favourite: boolean }>(`/me/favourites/${providerId}`, {
+    method: favourite ? "PUT" : "DELETE",
+    auth: true,
+  });
+}

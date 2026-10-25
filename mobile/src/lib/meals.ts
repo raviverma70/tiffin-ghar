@@ -14,3 +14,9 @@ export const MEAL_SHORT_KEY: Record<MealTime, MessageKey> = {
   LUNCH: "mealShort.LUNCH",
   DINNER: "mealShort.DINNER",
 };
+
+export const MEAL_KEY: Record<MealTime, MessageKey> = {
+  BREAKFAST: "meal.BREAKFAST",
+  LUNCH: "meal.LUNCH",
+  DINNER: "meal.DINNER",
+};

@@ -7,24 +7,31 @@ export type ApiResult<T> =
   | { ok: false; status: number; error: string };
 
 type Options = {
-  method?: "GET" | "POST" | "PATCH" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   auth?: boolean; // true: token lagao, 401 par refresh karke ek baar dobara try
 };
 
 const NETWORK_ERROR = "Server se jud nahi paye, baad me try karo";
 const GENERIC_ERROR = "Kuch gadbad hui, baad me try karo";
+const REQUEST_TIMEOUT_MS = 15_000;
 
 async function send<T>(path: string, opts: Options, accessToken?: string): Promise<ApiResult<T>> {
   const headers: Record<string, string> = {};
   if (opts.body !== undefined) headers["Content-Type"] = "application/json";
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
+  // Galat IP par phone ka fetch bahut der tak atka rehta hai (spinner chalta rehta tha).
+  // 15 second me jawab nahi to ruk jao aur "server se jud nahi paye" dikhao.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
   try {
     const res = await fetch(`${API_URL}${path}`, {
       method: opts.method ?? "GET",
       headers,
       body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+      signal: controller.signal,
     });
     const json = await res.json().catch(() => null);
     if (!res.ok) {
@@ -32,8 +39,10 @@ async function send<T>(path: string, opts: Options, accessToken?: string): Promi
     }
     return { ok: true, data: json as T };
   } catch {
-    // backend band hai, galat IP hai ya internet nahi
+    // backend band hai, galat IP hai, internet nahi, ya 15 second me jawab nahi
     return { ok: false, status: 0, error: NETWORK_ERROR };
+  } finally {
+    clearTimeout(timer);
   }
 }
 
