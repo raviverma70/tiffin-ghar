@@ -17,9 +17,10 @@ Ye file `tiffin-ghar-project-notes-step7.md` (aur usse pehle ki files) ke **baad
 | Phase 4: dukaan ke tabs, plan lena, mere subscriptions, favourite, share | ho gaya, push hua | `ec03c2d` |
 | Phase 5: review me photo + baar-baar logout ka bug fix | ho gaya, push hua | `5eb37e1` |
 | Phase 6: naya design (status ke rang, timeline, header, footer, login, font) | ho gaya, push hua | `6fb124a` |
-| Mobile Step 3: OTP login, login yaad rakhna, logout, bhasha sync | ho gaya, phone par test pass, push hua | Mobile Step 3 commit |
+| Mobile Step 3: OTP login, login yaad rakhna, logout, bhasha sync | ho gaya, push hua | `097947a` |
+| Mobile Step 4: dukaan list, phone ki location, chips, area, plans ki row | ho gaya, push hua | Mobile Step 4 commit |
 
-**Agla:** Mobile Step 4 (dukaan list, location `expo-location` se). Mobile Step 3 section 16 me. Phase 3 section 12, Phase 4 section 13, Phase 5 section 14, Phase 6 section 15 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
+**Agla:** Mobile Step 5 (dukaan ki screen: menu, cart, order; plans aur reviews). Mobile Step 3 section 16, Step 4 section 17 me. Phase 3 section 12, Phase 4 section 13, Phase 5 section 14, Phase 6 section 15 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
 
 ## 2. Faisle jo tay hue
 
@@ -760,6 +761,72 @@ npx expo-doctor
 | `tsc`: `"/login"` route type me nahi (typed routes) | Typed routes ki file `.expo/types/router.d.ts` sirf `npx expo start` banata hai. Nayi screen ke baad ek baar `npx expo start` chalao, phir `tsc` |
 | `npx expo lint` pehli baar ESLint install karne ka sawaal poochta hai | Abhi nahi chalaya. Chahiye to baad me `npx expo lint` chala kar "yes" |
 
-## 17. Naye chat me ye paste karo (hamesha aakhri section)
+## 17. Mobile Step 4: dukaan list, phone ki location, plans ki row
 
-> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) Phase 5 (review me photo, baar-baar logout ka bug fix) Phase 6 (naya design: status ke rang, order timeline, header/footer, login) aur Mobile Step 3 (OTP login) ho gaye. Ab Mobile Step 4 (dukaan list, location) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.
+### Kya bana
+- **App ka home** (`mobile/src/app/index.tsx`), website ke front page jaisa:
+  - Upar AccountBar (login/logout) aur bhasha ke button, phir "Ghar ka khana, aapke shehar me".
+  - **App khulte hi location maangta hai** (`expo-location`). Mila to bina shehar likhe **"Aapke paas ki dukaanein"**, sabse paas wali pehle, card par "📍 2.2 km door". "Location hatao" se band.
+  - **Mana kiya:** "Location nahi mili, neeche shehar chuno" + "Dobara try karo". **Hamesha ke liye mana** (Android "Don't ask again"): "Location band hai..." + **Settings kholo** button.
+  - Shehar likh kar **Dhundo**, ya shehar ke chips (backend `/providers/cities` se).
+  - Chips: **📍 Paas me** (sirf location ho to), **⭐ Top rating**, **🟢 Pure veg**. Shehar chuna ho to **Area** ke chips.
+  - **Dukaan card:** photo, doori, "Aapke area me", rating badge (rangin), Verified, Pure veg, "2 plan", aaj ki dishes, review ki line, "₹60 se shuru", "Menu dekho →".
+  - Neeche **🗓️ Subscription plans** ki row (side me scroll): din, time, Din 1 ka menu, daam, "₹120 roz".
+  - Neeche kheencho to refresh. Kuch na ho to "Kaise kaam karta hai" ke 3 dabbe.
+- **Dukaan ki screen** (`app/shop/[id].tsx`): abhi upar ka hissa (photo, naam, rating, khula/band, badges) aur "menu, order, plans agle step me". Card ya plan dabane par yahi khulti hai.
+- **Location privacy:** sirf app ki memory me, ~100 meter tak gol karke backend ko. Phone ya database me save nahi.
+
+### Files (`mobile/`)
+```
+package.json, app.json            ~ expo-location (SDK 57: ~57.0.22), permission ka text
+src/lib/useLocation.ts            * permission, GPS, mana/blocked/failed
+src/lib/shops.ts                  * getShops, getPlans, getCities, getAreas, getShop, types
+src/lib/meals.ts                  * MEAL_ICON, MEAL_SHORT_KEY (mobile ke liye)
+src/components/cards.tsx          * ShopCard, PlanCard, RatingBadge
+src/components/Chip.tsx           * gol filter button
+src/app/index.tsx                 ~ naya home
+src/app/shop/[id].tsx             * dukaan screen (shuruaat)
+web/src/i18n/messages/*.ts        ~ mhome.blocked, mhome.openSettings, mshop.soon
+```
+Baaki saare text website wale `home.*` hi hain (mobile wahi file padhta hai).
+
+### Faisle
+- `URLSearchParams` React Native me purane versions me poora nahi chalta tha, isliye query string apne chhote `qs()` helper se.
+- Website ka `lib/provider.ts` mobile me seedha import nahi ho sakta (`@/` alias mobile me `mobile/src` hai), isliye `meals.ts` alag.
+- Plan card abhi dukaan ki screen kholta hai. Plan lena Mobile Step 5/6 me.
+
+### Tests (phone, Expo Go)
+```
+cd "C:\Users\Ravi Kumar patel\tiffin-ghar\mobile"
+```
+```
+npx expo start --clear
+```
+1. App kholo → location ka popup → **Allow** → "Aapke paas ki dukaanein", card par km. (PC aur phone ek Wi-Fi par, `.env` me PC ka IP.)
+2. **Location hatao** → "Meri location se paas ki dukaanein dikhao" button.
+3. Phone Settings → Apps → Expo Go → Permissions → Location **Deny** → app me `r` → "Location nahi mili" / "Settings kholo".
+4. **Prayagraj** chip → "Prayagraj ki dukaanein", chips Top rating / Pure veg, Area: Poora shehar / Civil Lines.
+5. **Civil Lines** → card par "Aapke area me". **Pure veg** dabao/hatao.
+6. Neeche plans ki row side me scroll karo.
+7. Dukaan ka card dabao → dukaan ki screen. Wapas aao.
+8. Neeche kheench kar refresh.
+9. Bhasha हिन्दी / English karke dekho.
+10. Delhi jaisi door ki location ho (ya emulator me location badlo) → "Aapke paas abhi koi khuli dukaan nahi mili".
+
+Check (`mobile` folder):
+```
+npx tsc --noEmit
+```
+```
+npx expo-doctor
+```
+
+### Galtiyan aur hal
+| Galti | Hal |
+|---|---|
+| Nayi screen `shop/[id]` ka type `tsc` me nahi | Pehle ek baar `npx expo start` (typed routes banata hai), phir `tsc` |
+| "Location hatao" ke baad "location nahi mili" dikhta | `clear()` ab `idle` karta hai (button dikhe) |
+
+## 18. Naye chat me ye paste karo (hamesha aakhri section)
+
+> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) Phase 5 (review me photo, baar-baar logout ka bug fix) Phase 6 (naya design: status ke rang, order timeline, header/footer, login) Mobile Step 3 (OTP login) aur Mobile Step 4 (dukaan list, phone ki location, plans ki row) ho gaye. Ab Mobile Step 5 (dukaan ki screen: menu, cart, order, plans, reviews) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.

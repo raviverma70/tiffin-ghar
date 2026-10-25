@@ -532,6 +532,9 @@ export const hinglish = {
   "mlogin.guest": "Order aur plan ke liye login karo",
   "mlogin.offline": "Server se jud nahi paye. Aapka login bana hai, dobara try karo.",
   "mlogin.providerNote": "Dukaan ka dashboard abhi website par hai. Mobile me jaldi aayega.",
+  "mhome.blocked": "Location band hai. Phone ki Settings me Tiffin Ghar (Expo Go) ke liye location chalu karo, ya neeche shehar chuno.",
+  "mhome.openSettings": "Settings kholo",
+  "mshop.soon": "Menu, order, plans aur reviews app me agle step me aayenge. Tab tak website par dekh sakte ho.",
 } as const;
 
 export type MessageKey = keyof typeof hinglish;

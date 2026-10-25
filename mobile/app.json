@@ -25,7 +25,13 @@
       "expo-router",
       "expo-status-bar",
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Tiffin Ghar uses your location only to show the nearest tiffin shops. It is not stored."
+        }
+      ]
     ],
     "scheme": "tiffinghar",
     "experiments": {

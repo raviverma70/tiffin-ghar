@@ -534,4 +534,7 @@ export const en: Record<MessageKey, string> = {
   "mlogin.guest": "Log in to order and get plans",
   "mlogin.offline": "Couldn't reach the server. You're still logged in, please try again.",
   "mlogin.providerNote": "The shop dashboard is on the website for now. It's coming to the app soon.",
+  "mhome.blocked": "Location is turned off. Allow location for Tiffin Ghar (Expo Go) in your phone settings, or pick a city below.",
+  "mhome.openSettings": "Open settings",
+  "mshop.soon": "Menu, ordering, plans and reviews come to the app in the next step. Until then, use the website.",
 };
