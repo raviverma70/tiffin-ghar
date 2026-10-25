@@ -19,9 +19,10 @@ Ye file `tiffin-ghar-project-notes-step7.md` (aur usse pehle ki files) ke **baad
 | Phase 6: naya design (status ke rang, timeline, header, footer, login, font) | ho gaya, push hua | `6fb124a` |
 | Mobile Step 3: OTP login, login yaad rakhna, logout, bhasha sync | ho gaya, push hua | `097947a` |
 | Mobile Step 4: dukaan list, phone ki location, chips, area, plans ki row | ho gaya, push hua | `a728aed` |
-| Mobile Step 5: dukaan ki screen (tabs, ♥, share), cart aur order | ho gaya, phone par test pass, push hua | Mobile Step 5 commit |
+| Mobile Step 5: dukaan ki screen (tabs, ♥, share), cart aur order | ho gaya, push hua | `0224e69` |
+| Mobile Step 6: plan lena, mere orders (live timeline), mere subscriptions | ho gaya, phone par test pass, push hua | Mobile Step 6 commit |
 
-**Agla:** Mobile Step 6 (plan lena, mere orders + live status, mere subscriptions). Mobile Step 3 section 16, Step 4 section 17, Step 5 section 18 me. Phase 3 section 12, Phase 4 section 13, Phase 5 section 14, Phase 6 section 15 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
+**Agla:** Mobile Step 7 (pasandida dukaanein ki list, review + photo app se), phir Step 8-9 (provider ka dashboard app me). Mobile Step 3 section 16, Step 4 section 17, Step 5 section 18, Step 6 section 19 me. Phase 3 section 12, Phase 4 section 13, Phase 5 section 14, Phase 6 section 15 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
 
 ## 2. Faisle jo tay hue
 
@@ -906,6 +907,68 @@ ipconfig
 ```
 Phone ke browser me `http://<PC-ka-IP>:5000/api/v1/providers/cities` khule to app bhi chalega.
 
-## 19. Naye chat me ye paste karo (hamesha aakhri section)
+## 19. Mobile Step 6: plan lena, mere orders (live), mere subscriptions
 
-> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) Phase 5 (review me photo, baar-baar logout ka bug fix) Phase 6 (naya design: status ke rang, order timeline, header/footer, login) Mobile Step 3 (OTP login) aur Mobile Step 4 (dukaan list, phone ki location, plans ki row) ho gaye. Mobile Step 5 (dukaan ki screen: tabs, cart, order) bhi ho gaya. Ab Mobile Step 6 (plan lena, mere orders + live status, mere subscriptions) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.
+### Kya bana (`mobile/src/app/`)
+- **Plan ki screen** (`plan/[id].tsx`): plan ki jaankari, daam, "₹120 roz · ₹60 ek khana", poora din-wise menu, aur **"Plan lo"**: shuru ki tareekh ke chips (**Aaj, Kal**, aur aage ke 12 din), "Aakhri din: 31 Oct", pata, note, "Paisa abhi seedha dukaan wale ko (COD)" → **Plan ki request bhejo** → subscription ki screen par "Request bhej di!". Login nahi to Login button.
+  - Raaste: dukaan ke **Plans** tab me har plan par **"Ye plan lo →"**, aur home ki plans row ka card.
+- **Mere orders** (`orders/index.tsx`): har order ka card (dukaan, `#id · tareekh`, dishes, **rangin badge**, total, "Dekho →"), neeche kheencho to refresh, screen par wapas aao to taaza.
+- **Order detail** (`orders/[id].tsx`): **live timeline** (Order diya → Accept → Ban raha → Raaste me → Pahuncha), order chalu ho tab tak **har 15 second me apne aap taaza**, items, total, pata, note. Naye order par **"Order cancel karo"** (pakka? Haan/Nahi). Mana/cancel par timeline ki jagah grey dabba.
+- **Mere subscriptions** (`subscriptions/index.tsx`): plan, dukaan, rangin status, tareekh, time, **"Aaj Din 1 hai"**, daam.
+- **Subscription detail** (`subscriptions/[id].tsx`): status, tareekh, pata, din-wise menu me **aaj ka din orange**, naye request par **cancel**.
+- **Home** par login wale ke liye **🧾 Orders** aur **🗓️ Subscriptions** buttons. "Order ho gaya" screen par **"Order dekho (live status)"**.
+- Status ke rang website jaise (`components/status.tsx`): neela = naya, peela = ban raha, baingani = raste me, hara = pahuncha, laal/grey = band.
+
+### Files (`mobile/src/`)
+```
+lib/orders.ts                    * orders, plan, subscriptions API; todayInIndia, addDays, currentPlanDay
+components/status.tsx            * OrderBadge, SubscriptionBadge, OrderTimeline, LIVE_STATUSES
+components/NeedLogin.tsx         * login wali screens ke liye
+components/shop/PlansTab.tsx     ~ DayMenuList (reusable, aaj ka din), "Ye plan lo" button
+components/AccountBar.tsx        ~ Orders / Subscriptions buttons
+app/plan/[id].tsx                *
+app/orders/index.tsx, orders/[id].tsx                 *
+app/subscriptions/index.tsx, subscriptions/[id].tsx   *
+app/index.tsx                    ~ plan card → plan screen
+app/order-placed.tsx             ~ "Order dekho"
+web/src/i18n/messages/*.ts       ~ mplan.today/tomorrow, mord.*, mcommon.yes/no (mshop.planSoon hataya)
+```
+Backend me koi badlav nahi.
+
+### Faisle
+- Tareekh ke liye alag date-picker package nahi daala: aaj se 14 din ke **chips** (phone par aasaan, backend 30 din tak maanta hai).
+- India ki aaj ki tareekh: `Date.now() + 5.5 ghante` (phone ka Intl timezone par bharosa nahi).
+- Review dena app me abhi nahi (Delivered order par "website se de sakte ho" likha hai) → Mobile Step 8.
+
+### API check (test backend 5001)
+Plan 1 (7 din, 14 menu) aaya. Customer se subscription #3 bana (REQUESTED, start aaj, 14 din-menu), cancel kiya → CANCELLED. Orders list (18) aur order #17 (ACCEPTED) aaye.
+
+### Tests (phone, Expo Go)
+```
+cd "C:\Users\Ravi Kumar patel\tiffin-ghar\mobile"
+```
+```
+npx expo start --clear
+```
+1. Login → home par **Orders** / **Subscriptions** buttons.
+2. Dukaan → **Plans** → **Ye plan lo** → tareekh chip (Kal) → "Aakhri din" badle → pata → **Plan ki request bhejo** → "Request bhej di!".
+3. **Request cancel karo** → Haan → "Cancel hua".
+4. Website par provider (`8888888888`) se `/dashboard/subscriptions` me naya request **Chalu karo** → app me subscription kholo, neeche kheencho → "Chalu", "Aaj Din 1 hai", menu me aaj ka din orange.
+5. Dukaan se order do → **Order dekho** → timeline par "Order diya".
+6. Website par provider se **Accept**, phir **Ban raha** → app me 15 second ke andar timeline aage badhe (kuch dabaye bina).
+7. Naye order par **Order cancel karo** → Haan.
+8. **Orders** list me rangin badge, neeche kheench kar refresh.
+
+Check (`mobile` folder, nayi screen ke baad pehle ek baar `npx expo start`):
+```
+npx tsc --noEmit
+```
+```
+npx expo-doctor
+```
+
+**Test data:** customer `9999999999` ka subscription #3 (cancel hua).
+
+## 20. Naye chat me ye paste karo (hamesha aakhri section)
+
+> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) Phase 5 (review me photo, baar-baar logout ka bug fix) Phase 6 (naya design: status ke rang, order timeline, header/footer, login) Mobile Step 3 (OTP login) aur Mobile Step 4 (dukaan list, phone ki location, plans ki row) ho gaye. Mobile Step 5 (dukaan ki screen: tabs, cart, order) aur Mobile Step 6 (plan lena, mere orders live timeline ke saath, mere subscriptions) bhi ho gaye. Ab Mobile Step 7 (pasandida list, review + photo app se) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.

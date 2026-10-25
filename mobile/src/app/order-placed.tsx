@@ -5,7 +5,7 @@ import { colors } from "@/lib/theme";
 import { useT } from "@/i18n";
 import { Button, Card } from "@/components/ui";
 
-// Order ho gaya. Order ka live status (timeline) Mobile Step 6 me "Mere orders" ke saath.
+// Order ho gaya: "Order dekho" se live status (timeline), ya home
 export default function OrderPlaced() {
   const t = useT();
   const { id, total } = useLocalSearchParams<{ id: string; total: string }>();
@@ -23,7 +23,14 @@ export default function OrderPlaced() {
             total: Number.isFinite(totalPaise) ? formatPrice(totalPaise) : "-",
           })}
         </Text>
-        <Button title={t("mshop.backHome")} onPress={() => router.replace("/")} style={{ alignSelf: "stretch" }} />
+        {id ? (
+          <Button
+            title={t("mord.viewOrder")}
+            onPress={() => router.replace({ pathname: "/orders/[id]", params: { id } })}
+            style={{ alignSelf: "stretch" }}
+          />
+        ) : null}
+        <Button title={t("mshop.backHome")} onPress={() => router.replace("/")} variant="outline" style={{ alignSelf: "stretch" }} />
       </Card>
     </View>
   );

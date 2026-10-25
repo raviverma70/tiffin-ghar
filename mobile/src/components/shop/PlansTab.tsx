@@ -2,22 +2,36 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { getShopPlans, type ShopPlan } from "@/lib/shops";
 import { formatPrice } from "@/lib/format";
-import { MEAL_ICON, MEAL_SHORT_KEY } from "@/lib/meals";
+import { MEAL_ICON, MEAL_SHORT_KEY, type MealTime } from "@/lib/meals";
 import { colors, radius } from "@/lib/theme";
 import { translateError, useT } from "@/i18n";
-import { ErrorText } from "@/components/ui";
+import { router } from "expo-router";
+import { Button, ErrorText } from "@/components/ui";
 
-// Har din ka menu: din ka card, andar har time ki dishes
-function DayMenu({ plan }: { plan: ShopPlan }) {
+// Har din ka menu: din ka card, andar har time ki dishes. today = aaj ka din (orange)
+export function DayMenuList({
+  days: count,
+  mealTimes,
+  dayMenus,
+  today,
+}: {
+  days: number;
+  mealTimes: MealTime[];
+  dayMenus: { day: number; mealTime: MealTime; dishes: string[] }[];
+  today?: number | null;
+}) {
   const t = useT();
-  const days = Array.from({ length: plan.days }, (_, i) => i + 1);
+  const days = Array.from({ length: count }, (_, i) => i + 1);
   return (
     <View style={{ gap: 8, marginTop: 10 }}>
       {days.map((day) => (
-        <View key={day} style={styles.day}>
-          <Text style={styles.dayTitle}>{t("plan.day", { n: day })}</Text>
-          {plan.mealTimes.map((m) => {
-            const dishes = plan.dayMenus.find((d) => d.day === day && d.mealTime === m)?.dishes ?? [];
+        <View key={day} style={[styles.day, day === today && styles.today]}>
+          <Text style={styles.dayTitle}>
+            {t("plan.day", { n: day })}
+            {day === today ? `  · ${t("msub.todayBadge")}` : ""}
+          </Text>
+          {mealTimes.map((m) => {
+            const dishes = dayMenus.find((d) => d.day === day && d.mealTime === m)?.dishes ?? [];
             return (
               <Text key={m} style={styles.dayLine}>
                 <Text style={{ fontWeight: "600" }}>
@@ -84,9 +98,13 @@ export function PlansTab({ shopId }: { shopId: number }) {
               {open === plan.id ? "▾" : "▸"} {t("shop.seeDayMenu")}
             </Text>
           </Pressable>
-          {open === plan.id && <DayMenu plan={plan} />}
+          {open === plan.id && <DayMenuList days={plan.days} mealTimes={plan.mealTimes} dayMenus={plan.dayMenus} />}
 
-          <Text style={styles.soon}>{t("mshop.planSoon")}</Text>
+          <Button
+            title={`${t("shop.takePlan")} →`}
+            onPress={() => router.push({ pathname: "/plan/[id]", params: { id: String(plan.id) } })}
+            style={{ marginTop: 14, backgroundColor: "#9333ea" }}
+          />
         </View>
       ))}
     </View>
@@ -112,9 +130,9 @@ const styles = StyleSheet.create({
   price: { fontSize: 22, fontWeight: "800", color: colors.text },
   toggle: { color: "#7e22ce", fontWeight: "700", fontSize: 14 },
   day: { backgroundColor: "#faf5ff", borderRadius: radius.md, padding: 10, gap: 3 },
+  today: { backgroundColor: colors.orangeSoft, borderWidth: 1, borderColor: colors.orange },
   dayTitle: { fontWeight: "700", color: colors.text },
   dayLine: { fontSize: 14, color: colors.textSoft, lineHeight: 20 },
-  soon: { marginTop: 12, fontSize: 12, color: colors.muted },
   empty: {
     color: colors.textSoft,
     padding: 18,

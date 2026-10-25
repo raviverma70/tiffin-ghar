@@ -208,7 +208,9 @@ export default function Home() {
             keyExtractor={(p) => String(p.id)}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ gap: 12, paddingVertical: 8 }}
-            renderItem={({ item }) => <PlanCard plan={item} onPress={() => openShop(item.provider.id)} />}
+            renderItem={({ item }) => (
+              <PlanCard plan={item} onPress={() => router.push({ pathname: "/plan/[id]", params: { id: String(item.id) } })} />
+            )}
           />
         </View>
       )}
