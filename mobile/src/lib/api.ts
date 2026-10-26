@@ -10,6 +10,10 @@ type Options = {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   auth?: boolean; // true: token lagao, 401 par refresh karke ek baar dobara try
+  // Photo jaisa raw data (JSON nahi): blob + uska type, jaise "image/jpeg"
+  blob?: Blob;
+  contentType?: string;
+  timeoutMs?: number;
 };
 
 const NETWORK_ERROR = "Server se jud nahi paye, baad me try karo";
@@ -18,19 +22,20 @@ const REQUEST_TIMEOUT_MS = 15_000;
 
 async function send<T>(path: string, opts: Options, accessToken?: string): Promise<ApiResult<T>> {
   const headers: Record<string, string> = {};
-  if (opts.body !== undefined) headers["Content-Type"] = "application/json";
+  if (opts.blob) headers["Content-Type"] = opts.contentType ?? "application/octet-stream";
+  else if (opts.body !== undefined) headers["Content-Type"] = "application/json";
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
   // Galat IP par phone ka fetch bahut der tak atka rehta hai (spinner chalta rehta tha).
   // 15 second me jawab nahi to ruk jao aur "server se jud nahi paye" dikhao.
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? REQUEST_TIMEOUT_MS);
 
   try {
     const res = await fetch(`${API_URL}${path}`, {
       method: opts.method ?? "GET",
       headers,
-      body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+      body: opts.blob ?? (opts.body === undefined ? undefined : JSON.stringify(opts.body)),
       signal: controller.signal,
     });
     const json = await res.json().catch(() => null);

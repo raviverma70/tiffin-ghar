@@ -44,9 +44,10 @@ export function AccountBar() {
         </Text>
         <Button title={t("nav.logout")} onPress={logout} variant="outline" style={{ minHeight: 42 }} />
       </View>
-      <View style={styles.row}>
+      <View style={[styles.row, { flexWrap: "wrap", gap: 8 }]}>
         <Button title={`🧾 ${t("cnav.orders")}`} onPress={() => router.push("/orders")} variant="outline" style={styles.half} />
         <Button title={`🗓️ ${t("cnav.subs")}`} onPress={() => router.push("/subscriptions")} variant="outline" style={styles.half} />
+        <Button title={`♥ ${t("cnav.favs")}`} onPress={() => router.push("/favourites")} variant="outline" style={styles.half} />
       </View>
       {state.user.role === "PROVIDER" && <Text style={styles.note}>{t("mlogin.providerNote")}</Text>}
     </View>
@@ -65,5 +66,5 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: 12 },
   text: { color: colors.text, fontSize: 15 },
   note: { color: colors.textSoft, fontSize: 13 },
-  half: { flex: 1, minHeight: 42 },
+  half: { flexGrow: 1, flexBasis: "30%", minHeight: 42, paddingHorizontal: 8 },
 });

@@ -9,6 +9,7 @@ import { translateError, useLocale, useT } from "@/i18n";
 import { LIVE_STATUSES, ORDER_STATUS_KEY, OrderBadge, OrderTimeline } from "@/components/status";
 import { NeedLogin } from "@/components/NeedLogin";
 import { Button, Card, ErrorText } from "@/components/ui";
+import { MyReview, ReviewForm } from "@/components/OrderReview";
 
 // Order chalu ho tab tak har 15 second me taaza (website jaisa)
 const REFRESH_MS = 15_000;
@@ -20,6 +21,7 @@ function OrderDetail({ id }: { id: string }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [photoFailed, setPhotoFailed] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -130,7 +132,18 @@ function OrderDetail({ id }: { id: string }) {
       {order.status === "PLACED" && (
         <Button title={t("orders.cancel")} onPress={askCancel} variant="outline" loading={busy} />
       )}
-      {order.status === "DELIVERED" && !order.review && <Text style={styles.small}>{t("mord.reviewSoon")}</Text>}
+      {order.status === "DELIVERED" &&
+        (order.review ? (
+          <MyReview review={order.review} photoFailed={photoFailed} onChange={load} />
+        ) : (
+          <ReviewForm
+            orderId={order.id}
+            onDone={(failed) => {
+              setPhotoFailed(failed);
+              void load();
+            }}
+          />
+        ))}
     </ScrollView>
   );
 }

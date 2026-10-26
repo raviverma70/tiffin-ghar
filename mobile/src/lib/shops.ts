@@ -167,3 +167,18 @@ export function setFavourite(providerId: number, favourite: boolean) {
     auth: true,
   });
 }
+
+export type FavouriteShop = {
+  id: number;
+  shopName: string;
+  city: string;
+  area: string | null;
+  photoUrl: string | null;
+  isOpen: boolean;
+  rating: number | null;
+  ratingCount: number;
+};
+
+export function getFavourites() {
+  return api<{ items: FavouriteShop[] }>("/me/favourites", { auth: true });
+}

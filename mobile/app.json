@@ -31,6 +31,13 @@
         {
           "locationWhenInUsePermission": "Tiffin Ghar uses your location only to show the nearest tiffin shops. It is not stored."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Tiffin Ghar needs your photos to add food photos to your review.",
+          "cameraPermission": "Tiffin Ghar needs the camera to take food photos for your review."
+        }
       ]
     ],
     "scheme": "tiffinghar",

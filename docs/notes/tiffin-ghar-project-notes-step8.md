@@ -20,9 +20,10 @@ Ye file `tiffin-ghar-project-notes-step7.md` (aur usse pehle ki files) ke **baad
 | Mobile Step 3: OTP login, login yaad rakhna, logout, bhasha sync | ho gaya, push hua | `097947a` |
 | Mobile Step 4: dukaan list, phone ki location, chips, area, plans ki row | ho gaya, push hua | `a728aed` |
 | Mobile Step 5: dukaan ki screen (tabs, ♥, share), cart aur order | ho gaya, push hua | `0224e69` |
-| Mobile Step 6: plan lena, mere orders (live timeline), mere subscriptions | ho gaya, phone par test pass, push hua | Mobile Step 6 commit |
+| Mobile Step 6: plan lena, mere orders (live timeline), mere subscriptions | ho gaya, push hua | `1a02f7e` |
+| Mobile Step 7: pasandida list, review + photo (gallery/camera) | ho gaya, phone par test pass, push hua | Mobile Step 7 commit |
 
-**Agla:** Mobile Step 7 (pasandida dukaanein ki list, review + photo app se), phir Step 8-9 (provider ka dashboard app me). Mobile Step 3 section 16, Step 4 section 17, Step 5 section 18, Step 6 section 19 me. Phase 3 section 12, Phase 4 section 13, Phase 5 section 14, Phase 6 section 15 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
+**Agla:** Mobile Step 8-9 (dukaan wale ka dashboard app me: orders, status, dukaan khula/band, menu, plans). Mobile Step 3-7: section 16-20. Phase 3 section 12, Phase 4 section 13, Phase 5 section 14, Phase 6 section 15 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
 
 ## 2. Faisle jo tay hue
 
@@ -969,6 +970,58 @@ npx expo-doctor
 
 **Test data:** customer `9999999999` ka subscription #3 (cancel hua).
 
-## 20. Naye chat me ye paste karo (hamesha aakhri section)
+## 20. Mobile Step 7: pasandida dukaanein, review + photo app se
 
-> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) Phase 5 (review me photo, baar-baar logout ka bug fix) Phase 6 (naya design: status ke rang, order timeline, header/footer, login) Mobile Step 3 (OTP login) aur Mobile Step 4 (dukaan list, phone ki location, plans ki row) ho gaye. Mobile Step 5 (dukaan ki screen: tabs, cart, order) aur Mobile Step 6 (plan lena, mere orders live timeline ke saath, mere subscriptions) bhi ho gaye. Ab Mobile Step 7 (pasandida list, review + photo app se) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.
+### Kya bana
+- **Pasandida** (`mobile/src/app/favourites.tsx`): ♥ ki hui dukaanein (photo, area, rating, khuli/band). Card dabao to dukaan, **♥** dabao to turant list se hat jaye. Khali ho to "♡ ... Dukaanein dekho". Home par login wale ke liye ab teen button: **🧾 Orders · 🗓️ Subscriptions · ♥ Pasandida**.
+- **Review** (`components/OrderReview.tsx`, order detail me, sirf **Delivered** par):
+  - **ReviewForm:** bade ★ (1-5), comment, **🖼️ Gallery / 📷 Camera** se 3 tak photo (preview, × se hatao) → **Review bhejo**.
+  - **MyReview** (review ke baad): stars, comment, photos (dabao to badi), × se hatao, Gallery/Camera se aur jodo (3 tak).
+  - Photo **phone par hi chhoti** hoti hai (`expo-image-manipulator`: lambi side 1000px, JPG 70%, ~200 KB), phir seedha `image/jpeg` data backend ko.
+  - Koi photo fail ho to review nahi rukta, "kuch photo nahi lag payi, neeche se dobara lagao".
+  - Photo/camera ki ijazat na mile to "Settings me allow karo".
+
+### Files (`mobile/`)
+```
+package.json, app.json                 ~ expo-image-picker (~57.0.20), expo-image-manipulator (~57.0.21), photo/camera permission text
+src/lib/api.ts                         ~ blob + contentType (raw photo), timeoutMs (upload 60s)
+src/lib/reviews.ts                     * postReview, uploadReviewPhoto, deleteReviewPhoto, pickPhotos (shrink)
+src/lib/shops.ts                       ~ getFavourites, FavouriteShop
+src/lib/orders.ts                      ~ review.photos
+src/components/OrderReview.tsx         * ReviewForm, MyReview
+src/components/AccountBar.tsx          ~ ♥ Pasandida button
+src/app/favourites.tsx                 *
+src/app/orders/[id].tsx                ~ review ka hissa
+web/src/i18n/messages/*.ts             ~ mrev.gallery/camera/denied/uploading (mord.reviewSoon hataya)
+```
+Backend me koi badlav nahi.
+
+### API check (test backend 5001)
+Favourites list aayi (Sharma, khuli, rating). Review #4 par `image/jpeg` test photo upload hui (id 5) aur turant hata di. Order #8 me review photos ke saath aata hai.
+
+### Tests (phone, Expo Go)
+```
+cd "C:\Users\Ravi Kumar patel\tiffin-ghar\mobile"
+```
+```
+npx expo start --clear
+```
+1. Login → home par **♥ Pasandida** → list. Dukaan ke page par ♥ badlo → wapas aao → list badli.
+2. List me **♥** dabao → dukaan hat jaye.
+3. Koi **Delivered** order (bina review) kholo (website par provider se order ko Delivered tak le jao) → neeche review form.
+4. 4 ★, comment, **Gallery** se 2 photo (preview me × se ek hatao), **Camera** se 1 → **Review bhejo** → "Aapka review" photos ke saath.
+5. Ek photo par **×** → hat jaye. Gallery se nayi jodo.
+6. Website par `/provider/1?tab=reviews` aur app me dukaan ke **Reviews** tab me wahi photos.
+7. Pehli baar Gallery/Camera par ijazat ka popup → Deny karke dekho → "Settings me allow karo".
+
+Check (`mobile` folder, nayi screen ke baad pehle ek baar `npx expo start`):
+```
+npx tsc --noEmit
+```
+```
+npx expo-doctor
+```
+
+## 21. Naye chat me ye paste karo (hamesha aakhri section)
+
+> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) Phase 5 (review me photo, baar-baar logout ka bug fix) Phase 6 (naya design: status ke rang, order timeline, header/footer, login) Mobile Step 3 (OTP login) aur Mobile Step 4 (dukaan list, phone ki location, plans ki row) ho gaye. Mobile Step 5 (dukaan ki screen: tabs, cart, order) aur Mobile Step 6 (plan lena, mere orders live timeline ke saath, mere subscriptions) bhi ho gaye. Mobile Step 7 (pasandida list, review + photo gallery/camera se) bhi ho gaya. Ab Mobile Step 8-9 (dukaan wale ka dashboard app me) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.

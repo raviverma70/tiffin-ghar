@@ -15,7 +15,7 @@ export type Order = {
   createdAt: string;
   provider: { id: number; shopName: string };
   items: { id: number; name: string; pricePaise: number; quantity: number }[];
-  review: { id: number; rating: number; comment: string | null } | null;
+  review: { id: number; rating: number; comment: string | null; photos: { id: number; url: string }[] } | null;
 };
 
 export function getOrders(page = 1) {

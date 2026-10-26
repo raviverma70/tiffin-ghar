@@ -544,7 +544,10 @@ export const en: Record<MessageKey, string> = {
   "mplan.tomorrow": "Tomorrow",
   "mord.confirmCancel": "Cancel this order?",
   "mord.viewOrder": "View order (live status)",
-  "mord.reviewSoon": "Reviews are coming to the app soon. You can review on the website for now.",
   "mcommon.yes": "Yes",
   "mcommon.no": "No",
+  "mrev.gallery": "Gallery",
+  "mrev.camera": "Camera",
+  "mrev.denied": "Photo permission was denied. Allow photos or camera for Expo Go / Tiffin Ghar in your phone settings.",
+  "mrev.uploading": "Uploading photo...",
 };

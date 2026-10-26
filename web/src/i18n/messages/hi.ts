@@ -544,7 +544,10 @@ export const hi: Record<MessageKey, string> = {
   "mplan.tomorrow": "कल",
   "mord.confirmCancel": "यह ऑर्डर रद्द कर दें?",
   "mord.viewOrder": "ऑर्डर देखें (लाइव स्थिति)",
-  "mord.reviewSoon": "रिव्यू देना ऐप में जल्दी आएगा। अभी वेबसाइट से दे सकते हैं।",
   "mcommon.yes": "हाँ",
   "mcommon.no": "नहीं",
+  "mrev.gallery": "गैलरी",
+  "mrev.camera": "कैमरा",
+  "mrev.denied": "फ़ोटो की अनुमति नहीं मिली। फ़ोन की सेटिंग में Expo Go / टिफ़िन घर को फ़ोटो या कैमरा की अनुमति दें।",
+  "mrev.uploading": "फ़ोटो लग रही है...",
 };

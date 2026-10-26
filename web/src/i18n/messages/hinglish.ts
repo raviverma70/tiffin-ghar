@@ -542,9 +542,12 @@ export const hinglish = {
   "mplan.tomorrow": "Kal",
   "mord.confirmCancel": "Ye order cancel kar dein?",
   "mord.viewOrder": "Order dekho (live status)",
-  "mord.reviewSoon": "Review dena app me jaldi aayega. Abhi website se de sakte ho.",
   "mcommon.yes": "Haan",
   "mcommon.no": "Nahi",
+  "mrev.gallery": "Gallery",
+  "mrev.camera": "Camera",
+  "mrev.denied": "Photo ki ijazat nahi mili. Phone ki Settings me Expo Go / Tiffin Ghar ko photo ya camera allow karo.",
+  "mrev.uploading": "Photo lag rahi hai...",
 } as const;
 
 export type MessageKey = keyof typeof hinglish;
