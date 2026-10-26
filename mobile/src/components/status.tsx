@@ -57,10 +57,11 @@ function Badge({ bg, fg, text }: { bg: string; fg: string; text: string }) {
   );
 }
 
-export function OrderBadge({ status }: { status: OrderStatus }) {
+// label: dukaan wale ko alag text (pstatus.*), rang wahi
+export function OrderBadge({ status, label }: { status: OrderStatus; label?: string }) {
   const t = useT();
   const [bg, fg] = ORDER_STYLE[status];
-  return <Badge bg={bg} fg={fg} text={`${ORDER_ICON[status]} ${t(STEP_KEY[status])}`} />;
+  return <Badge bg={bg} fg={fg} text={`${ORDER_ICON[status]} ${label ?? t(STEP_KEY[status])}`} />;
 }
 
 const SUB_STYLE: Record<SubscriptionStatus, [string, string]> = {

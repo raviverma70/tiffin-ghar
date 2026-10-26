@@ -6,6 +6,7 @@ import {
   Text,
   TextInput,
   View,
+  type StyleProp,
   type TextInputProps,
   type ViewStyle,
 } from "react-native";
@@ -17,7 +18,7 @@ type ButtonProps = {
   variant?: "primary" | "outline";
   loading?: boolean;
   disabled?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 };
 
 // App ka ek jaisa button (website ke orange button jaisa)

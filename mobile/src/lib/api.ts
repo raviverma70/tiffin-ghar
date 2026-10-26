@@ -94,7 +94,8 @@ export async function api<T>(path: string, opts: Options = {}): Promise<ApiResul
   const token = await getAccessToken();
   if (token) {
     const res = await send<T>(path, opts, token);
-    if (res.ok || res.status !== 401) return res;
+    // 401: token expire. 403: token me purana role ho sakta hai (abhi-abhi dukaan bani) -> naya token, ek baar dobara
+    if (res.ok || (res.status !== 401 && res.status !== 403)) return res;
 
     // Is beech kisi aur request ne naya token le liya ho to wahi use karo
     const latest = await getAccessToken();

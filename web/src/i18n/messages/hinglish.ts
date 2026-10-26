@@ -531,7 +531,6 @@ export const hinglish = {
   "mlogin.welcome": "Namaste! {phone} se login hai",
   "mlogin.guest": "Order aur plan ke liye login karo",
   "mlogin.offline": "Server se jud nahi paye. Aapka login bana hai, dobara try karo.",
-  "mlogin.providerNote": "Dukaan ka dashboard abhi website par hai. Mobile me jaldi aayega.",
   "mhome.blocked": "Location band hai. Phone ki Settings me Tiffin Ghar (Expo Go) ke liye location chalu karo, ya neeche shehar chuno.",
   "mhome.openSettings": "Settings kholo",
   "mshop.soon": "Menu, order, plans aur reviews app me agle step me aayenge. Tab tak website par dekh sakte ho.",
@@ -548,6 +547,12 @@ export const hinglish = {
   "mrev.camera": "Camera",
   "mrev.denied": "Photo ki ijazat nahi mili. Phone ki Settings me Expo Go / Tiffin Ghar ko photo ya camera allow karo.",
   "mrev.uploading": "Photo lag rahi hai...",
+  "mdash.title": "Meri dukaan",
+  "mdash.noProfile": "Aapki dukaan ki profile abhi nahi bani. Website par 'Dukaan kholo' se profile banao, phir yahan dashboard dikhega.",
+  "mdash.webNote": "Menu, plans, photo aur location badalna abhi website ke dashboard par hai. App me jaldi aayega.",
+  "mdash.noLocation": "Dukaan ki location nahi bhari. Website ke dashboard me 'Profile badlo' se bharo, taaki paas ke customers ko dukaan upar dikhe.",
+  "mdash.call": "Call",
+  "mdash.autoRefresh": "Ye list har 30 second me apne aap naye orders la leti hai. Neeche kheench kar bhi taaza karo.",
 } as const;
 
 export type MessageKey = keyof typeof hinglish;

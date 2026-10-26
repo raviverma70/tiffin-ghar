@@ -49,7 +49,9 @@ export function AccountBar() {
         <Button title={`🗓️ ${t("cnav.subs")}`} onPress={() => router.push("/subscriptions")} variant="outline" style={styles.half} />
         <Button title={`♥ ${t("cnav.favs")}`} onPress={() => router.push("/favourites")} variant="outline" style={styles.half} />
       </View>
-      {state.user.role === "PROVIDER" && <Text style={styles.note}>{t("mlogin.providerNote")}</Text>}
+      {state.user.role === "PROVIDER" && (
+        <Button title={`🏪 ${t("mdash.title")}`} onPress={() => router.push("/dashboard")} style={{ minHeight: 44 }} />
+      )}
     </View>
   );
 }
@@ -65,6 +67,5 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: "row", alignItems: "center", gap: 12 },
   text: { color: colors.text, fontSize: 15 },
-  note: { color: colors.textSoft, fontSize: 13 },
   half: { flexGrow: 1, flexBasis: "30%", minHeight: 42, paddingHorizontal: 8 },
 });

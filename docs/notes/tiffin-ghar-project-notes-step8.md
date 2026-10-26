@@ -21,9 +21,10 @@ Ye file `tiffin-ghar-project-notes-step7.md` (aur usse pehle ki files) ke **baad
 | Mobile Step 4: dukaan list, phone ki location, chips, area, plans ki row | ho gaya, push hua | `a728aed` |
 | Mobile Step 5: dukaan ki screen (tabs, ♥, share), cart aur order | ho gaya, push hua | `0224e69` |
 | Mobile Step 6: plan lena, mere orders (live timeline), mere subscriptions | ho gaya, push hua | `1a02f7e` |
-| Mobile Step 7: pasandida list, review + photo (gallery/camera) | ho gaya, phone par test pass, push hua | Mobile Step 7 commit |
+| Mobile Step 7: pasandida list, review + photo (gallery/camera) | ho gaya, push hua | `594eadd` |
+| Mobile Step 8: dukaan wale ka dashboard (khula/band, orders + status, subscriptions) | ho gaya, phone par test pass, push hua | Mobile Step 8 commit |
 
-**Agla:** Mobile Step 8-9 (dukaan wale ka dashboard app me: orders, status, dukaan khula/band, menu, plans). Mobile Step 3-7: section 16-20. Phase 3 section 12, Phase 4 section 13, Phase 5 section 14, Phase 6 section 15 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
+**Agla:** Mobile Step 9 (dukaan wale ke liye app me menu, plans, photo, location badalna). Mobile Step 3-8: section 16-21. Phase 3 section 12, Phase 4 section 13, Phase 5 section 14, Phase 6 section 15 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
 
 ## 2. Faisle jo tay hue
 
@@ -1022,6 +1023,64 @@ npx tsc --noEmit
 npx expo-doctor
 ```
 
-## 21. Naye chat me ye paste karo (hamesha aakhri section)
+## 21. Mobile Step 8: dukaan wale ka dashboard app me
 
-> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) Phase 5 (review me photo, baar-baar logout ka bug fix) Phase 6 (naya design: status ke rang, order timeline, header/footer, login) Mobile Step 3 (OTP login) aur Mobile Step 4 (dukaan list, phone ki location, plans ki row) ho gaye. Mobile Step 5 (dukaan ki screen: tabs, cart, order) aur Mobile Step 6 (plan lena, mere orders live timeline ke saath, mere subscriptions) bhi ho gaye. Mobile Step 7 (pasandida list, review + photo gallery/camera se) bhi ho gaya. Ab Mobile Step 8-9 (dukaan wale ka dashboard app me) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.
+### Kya bana (`mobile/src/app/dashboard/`)
+- **Meri dukaan** (`index.tsx`): dukaan ka naam, area; Approval ka intezaar / Reject ho to message; location na bhari ho to peela message. **● Dukaan khuli hai / ○ band** + **Dukaan kholo / band karo** button. Do tile: **🧾 Naye orders: 2** aur **🗓️ Naye subscription requests: 1** (dabao to list). Neeche note: menu, plans, photo, location abhi website par.
+- **Orders** (`orders.tsx`): filter chips (Naye, Accept kiye, Ban raha hai... Sab), har order: number, tareekh, rangin status (dukaan wale ka text), customer ka number + **📞 Call** (phone ka dialer), pata, note, items, total ("customer se cash lena"), aur agle status ke button (**Accept karo** hara, **Mana karo** laal "pakka?" ke saath, phir **Ban raha hai → Raaste me hai → Pahunch gaya**). **Har 30 second me apne aap** naye orders, neeche kheench kar bhi. Naya order neeli border se. Customer ne beech me cancel kiya to message aur list taaza.
+- **Subscriptions** (`subscriptions.tsx`): filter (Naya request, Chalu, ...), plan, din aur time, tareekh, customer + **Call**, pata, note; Request par **Chalu karo / Mana karo**, Chalu par **Poora hua / Cancel karo**.
+- **Home** par dukaan wale ko **🏪 Meri dukaan** button (pehle sirf note tha).
+- Customer ya bina dukaan wala `/dashboard` khole to: "Dukaan ki profile website par 'Dukaan kholo' se banao" (`ProviderGate`).
+- `api()` ab **403** par bhi ek baar token refresh karke dobara try karta hai (abhi-abhi dukaan bani ho to token me purana role hota hai, website ke `providerFetch` jaisa).
+
+### Files (`mobile/src/`)
+```
+lib/provider.ts               * getMyShop, setShopOpen, getShopOrders, setOrderStatus, getShopSubscriptions, setSubscriptionStatus, NEXT_STATUSES, SUB_NEXT, filters, keys
+lib/api.ts                    ~ 403 par refresh + retry
+components/ProviderGate.tsx   * login + PROVIDER role
+components/status.tsx         ~ OrderBadge me label (dukaan wala text)
+components/ui.tsx             ~ Button style: StyleProp
+components/AccountBar.tsx     ~ "Meri dukaan" button (mlogin.providerNote hataya)
+app/dashboard/index.tsx, orders.tsx, subscriptions.tsx   *
+web/src/i18n/messages/*.ts    ~ mdash.* (title, noProfile, webNote, noLocation, call, autoRefresh)
+```
+Baaki text website wale `dash.*`, `porders.*`, `pstatus.*`, `action.*`, `filter.*`, `subs.*` hi hain. Backend me koi badlav nahi.
+
+### API check (test backend 5001)
+Provider: dukaan APPROVED, khuli, location bhari. Customer provider route par → 403. Test order #20: Accept → (Delivered mana: "Order abhi ACCEPTED hai...") → Reject. Test subscription #4: Chalu → Cancel. Dukaan band karke wapas khuli ki.
+
+### Tests (phone, Expo Go)
+```
+cd "C:\Users\Ravi Kumar patel\tiffin-ghar\mobile"
+```
+```
+npx expo start --clear
+```
+1. `8888888888` se login → home par **🏪 Meri dukaan**.
+2. **Dukaan band karo** → website/app me customer ko dukaan band dikhe → **Dukaan kholo**.
+3. Doosre phone/website se customer (`9999999999`) ka order do → app ki Orders list me 30 second ke andar naya order (neeli border).
+4. **📞 Call** → phone ka dialer number ke saath.
+5. **Accept karo** → **Ban raha hai** → **Raaste me hai** → **Pahunch gaya**. Customer ke app me timeline saath-saath badle.
+6. Ek order par **Mana karo** → pakka? → Haan.
+7. Customer se plan request bhejo → **Subscriptions** → **Chalu karo** → customer ke app me "Chalu".
+8. Customer (`9999999999`) se `/dashboard` (Meri dukaan) nahi dikhta. Agar URL se khule to "profile website par banao".
+
+Check (`mobile` folder, nayi screen ke baad pehle ek baar `npx expo start`):
+```
+npx tsc --noEmit
+```
+```
+npx expo-doctor
+```
+
+### Galtiyan aur hal
+| Galti | Hal |
+|---|---|
+| `expo-doctor`: "TypeError: fetch failed" | Ek check internet se Expo ki list laata hai. Internet thodi der atka tha; dobara chalaya to 21/21 |
+| Button par `[style, condition && {...}]` type error | `Button` ka `style` ab `StyleProp<ViewStyle>` |
+
+**Test data:** order #20 (Reject), subscription #4 (Cancel).
+
+## 22. Naye chat me ye paste karo (hamesha aakhri section)
+
+> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) Phase 5 (review me photo, baar-baar logout ka bug fix) Phase 6 (naya design: status ke rang, order timeline, header/footer, login) Mobile Step 3 (OTP login) aur Mobile Step 4 (dukaan list, phone ki location, plans ki row) ho gaye. Mobile Step 5 (dukaan ki screen: tabs, cart, order) aur Mobile Step 6 (plan lena, mere orders live timeline ke saath, mere subscriptions) bhi ho gaye. Mobile Step 7 (pasandida list, review + photo gallery/camera se) bhi ho gaya. Mobile Step 8 (dukaan wale ka dashboard: khula/band, orders aur status, subscriptions) bhi ho gaya. Ab Mobile Step 9 (app se menu, plans, photo, location badalna) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.

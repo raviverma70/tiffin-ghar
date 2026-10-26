@@ -533,7 +533,6 @@ export const en: Record<MessageKey, string> = {
   "mlogin.welcome": "Hello! Logged in as {phone}",
   "mlogin.guest": "Log in to order and get plans",
   "mlogin.offline": "Couldn't reach the server. You're still logged in, please try again.",
-  "mlogin.providerNote": "The shop dashboard is on the website for now. It's coming to the app soon.",
   "mhome.blocked": "Location is turned off. Allow location for Tiffin Ghar (Expo Go) in your phone settings, or pick a city below.",
   "mhome.openSettings": "Open settings",
   "mshop.soon": "Menu, ordering, plans and reviews come to the app in the next step. Until then, use the website.",
@@ -550,4 +549,10 @@ export const en: Record<MessageKey, string> = {
   "mrev.camera": "Camera",
   "mrev.denied": "Photo permission was denied. Allow photos or camera for Expo Go / Tiffin Ghar in your phone settings.",
   "mrev.uploading": "Uploading photo...",
+  "mdash.title": "My shop",
+  "mdash.noProfile": "Your shop profile isn't set up yet. Create it on the website with 'Open a shop', then the dashboard appears here.",
+  "mdash.webNote": "Editing menu, plans, photos and location is on the website dashboard for now. It's coming to the app soon.",
+  "mdash.noLocation": "Shop location isn't set. Add it under 'Edit profile' on the website dashboard so nearby customers see your shop first.",
+  "mdash.call": "Call",
+  "mdash.autoRefresh": "This list fetches new orders every 30 seconds. Pull down to refresh too.",
 };
