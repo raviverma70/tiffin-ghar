@@ -140,3 +140,119 @@ export const SUB_FILTERS: { value: SubscriptionStatus | undefined; key: MessageK
   { value: "REJECTED", key: "sstatus.REJECTED" },
   { value: "CANCELLED", key: "sstatus.CANCELLED" },
 ];
+
+// ---------- Menu (Step 9) ----------
+
+export type MyMenuItem = {
+  id: number;
+  name: string;
+  description: string | null;
+  pricePaise: number;
+  dayOfWeek: number | null;
+  isVeg: boolean;
+  isAvailable: boolean;
+  mealTime: MealTime;
+  photoUrl: string | null;
+};
+
+export type MenuItemBody = {
+  name: string;
+  description: string;
+  pricePaise: number;
+  dayOfWeek: number | null;
+  isVeg: boolean;
+  isAvailable: boolean;
+  mealTime: MealTime;
+};
+
+export function getMyMenu() {
+  return api<MyMenuItem[]>("/providers/me/menu", { auth: true });
+}
+
+export function createMenuItem(body: MenuItemBody) {
+  return api<MyMenuItem>("/providers/me/menu", {
+    method: "POST",
+    body: { ...body, description: body.description.trim() || undefined },
+    auth: true,
+  });
+}
+
+export function updateMenuItem(id: number, body: Partial<MenuItemBody>) {
+  return api<MyMenuItem>(`/providers/me/menu/${id}`, { method: "PATCH", body, auth: true });
+}
+
+export function deleteMenuItem(id: number) {
+  return api(`/providers/me/menu/${id}`, { method: "DELETE", auth: true });
+}
+
+export function deleteMenuPhoto(id: number) {
+  return api(`/providers/me/menu/${id}/photo`, { method: "DELETE", auth: true });
+}
+
+// ---------- Profile: photo, area, location ----------
+
+export type MyProfile = MyShop & { photoUrl: string | null; address: string };
+
+export function getMyProfile() {
+  return api<MyProfile>("/providers/me", { auth: true });
+}
+
+export function updateProfile(body: { area?: string; latitude?: number; longitude?: number }) {
+  return api<MyProfile>("/providers/me", { method: "PATCH", body, auth: true });
+}
+
+export function deleteShopPhoto() {
+  return api("/providers/me/photo", { method: "DELETE", auth: true });
+}
+
+// ---------- Subscription plans ----------
+
+export type MyPlan = {
+  id: number;
+  name: string;
+  description: string | null;
+  days: number;
+  mealTimes: MealTime[];
+  pricePaise: number;
+  isVeg: boolean;
+  isActive: boolean;
+  dayMenus: { day: number; mealTime: MealTime; dishes: string[] }[];
+  _count: { subscriptions: number };
+};
+
+export type PlanBody = {
+  name: string;
+  description: string;
+  days: number;
+  mealTimes: MealTime[];
+  pricePaise: number;
+  isVeg: boolean;
+};
+
+export function getMyPlans() {
+  return api<{ items: MyPlan[] }>("/providers/me/plans", { auth: true });
+}
+
+export function getMyPlan(id: string) {
+  return api<MyPlan>(`/providers/me/plans/${encodeURIComponent(id)}`, { auth: true });
+}
+
+export function createPlan(body: PlanBody) {
+  return api<MyPlan>("/providers/me/plans", {
+    method: "POST",
+    body: { ...body, description: body.description.trim() || undefined },
+    auth: true,
+  });
+}
+
+export function updatePlan(id: number, body: Partial<PlanBody> & { isActive?: boolean }) {
+  return api<MyPlan>(`/providers/me/plans/${id}`, { method: "PATCH", body, auth: true });
+}
+
+export function savePlanMenu(id: number, items: { day: number; mealTime: MealTime; dishes: string[] }[]) {
+  return api<MyPlan>(`/providers/me/plans/${id}/menu`, { method: "PUT", body: { items }, auth: true });
+}
+
+export function deletePlan(id: number) {
+  return api<{ deleted: boolean }>(`/providers/me/plans/${id}`, { method: "DELETE", auth: true });
+}

@@ -22,9 +22,10 @@ Ye file `tiffin-ghar-project-notes-step7.md` (aur usse pehle ki files) ke **baad
 | Mobile Step 5: dukaan ki screen (tabs, ♥, share), cart aur order | ho gaya, push hua | `0224e69` |
 | Mobile Step 6: plan lena, mere orders (live timeline), mere subscriptions | ho gaya, push hua | `1a02f7e` |
 | Mobile Step 7: pasandida list, review + photo (gallery/camera) | ho gaya, push hua | `594eadd` |
-| Mobile Step 8: dukaan wale ka dashboard (khula/band, orders + status, subscriptions) | ho gaya, phone par test pass, push hua | Mobile Step 8 commit |
+| Mobile Step 8: dukaan wale ka dashboard (khula/band, orders + status, subscriptions) | ho gaya, phone par test pass, push hua | `1e53402` |
+| Mobile Step 9: app se menu, plans (din-wise), photo aur location | ho gaya, push hua | Mobile Step 9 commit |
 
-**Agla:** Mobile Step 9 (dukaan wale ke liye app me menu, plans, photo, location badalna). Mobile Step 3-8: section 16-21. Phase 3 section 12, Phase 4 section 13, Phase 5 section 14, Phase 6 section 15 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
+**Agla:** CLAUDE.md ke plan ka agla kaam. Mobile Step 3-9: section 16-22. Phase 3 section 12, Phase 4 section 13, Phase 5 section 14, Phase 6 section 15 me. Mobile Step 3 (OTP login) Phase 3 se pehle ya baad, dono chal sakta hai.
 
 ## 2. Faisle jo tay hue
 
@@ -1081,6 +1082,133 @@ npx expo-doctor
 
 **Test data:** order #20 (Reject), subscription #4 (Cancel).
 
-## 22. Naye chat me ye paste karo (hamesha aakhri section)
+## 22. Mobile Step 9: menu, plans, photo aur location app se
 
-> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) Phase 5 (review me photo, baar-baar logout ka bug fix) Phase 6 (naya design: status ke rang, order timeline, header/footer, login) Mobile Step 3 (OTP login) aur Mobile Step 4 (dukaan list, phone ki location, plans ki row) ho gaye. Mobile Step 5 (dukaan ki screen: tabs, cart, order) aur Mobile Step 6 (plan lena, mere orders live timeline ke saath, mere subscriptions) bhi ho gaye. Mobile Step 7 (pasandida list, review + photo gallery/camera se) bhi ho gaya. Mobile Step 8 (dukaan wale ka dashboard: khula/band, orders aur status, subscriptions) bhi ho gaya. Ab Mobile Step 9 (app se menu, plans, photo, location badalna) karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.
+### Kya bana (`mobile/src/app/dashboard/`)
+- **Meri dukaan** (`index.tsx`) par 3 naye tile: **🍛 Mera menu**, **📅 Subscription plans**, **📷 Photo aur location**. Location na bhari ho to peela message aata hai; use dabao to seedha "Photo aur location" khulta hai. Neeche wala note badla (ab sirf dukaan ka naam/pata aur reviews ki list website par).
+- **Mera menu** (`menu.tsx`): items Nashta / Lunch / Dinner me baante hue. Har item par photo (na ho to 🍱), veg/non-veg ka rangin ●, daam, "Har din" ya din ka naam, aur Chalu/Band. Har item ke button: **Band karo / Chalu karo**, **Badlo**, **Hatao** ("pakka?" ke saath). Upar **+ Naya item jodo**. Form se wapas aao to list apne aap taaza ho jaati hai.
+- **Item ka form** (`menu-item.tsx`; `?id=` ho to badlo, na ho to naya):
+  - Naam: box par tap karte hi thali/dish ke chips.
+  - "Kya-kya hai": chips.
+  - Daam rupaye me (`85` ya `85.50`). App ise paise me badalkar bhejta hai (`rupeesToPaise`).
+  - Time ke chips, din ke chips (Har din + 7 din), Veg aur Chalu ke switch.
+  - Naya item save hote hi wahi screen "badlo" wali ban jaati hai. Tab **dish ki photo** laga sakte ho (Gallery / Camera, 1000px JPG me chhoti karke), aur hata bhi sakte ho.
+- **Plans** (`plans.tsx`): har plan ka naam, Chalu/Band badge, din, time, daam, **menu kitna bhara** (hari patti, jaise "Menu: 10/14 bhara") aur kitne subscriptions. Upar **+ Naya plan banao**.
+- **Plan ka form** (`plan-form.tsx`):
+  - Naam (chips), din ke chips **7 / 15 / 26 / 30** ya khud likho (1-31), time ke chips (ek, do ya teeno).
+  - Daam (chips), saath me "Lagbhag ₹60 ek khana". Jaankari aur Pure veg.
+  - Naya plan banate hi seedha din-wise menu khulta hai.
+  - `?id=` ke saath plan ki jaankari badalti hai. Din/time kam karo to bahar wala menu hat jaata hai (note dikhta hai).
+- **Din-wise menu** (`plan-menu.tsx`):
+  - Upar plan ki jaankari, **Plan chalu karo / band karo** aur **⚙️ Plan ki jaankari badlo**. Jab tak poora menu save nahi hota, chalu wala button band rehta hai aur wajah likhi aati hai.
+  - Phir ek **chipka hua patta** jo scroll karne par bhi upar rehta hai. Usme: "Abhi 6 jagah khali hain" ya "✓ Poora menu bhara hai", hari patti, **Menu save karo**, "● Badlav save nahi hue", aur **din ke gol chips** (1, 2, 3...). Bhara din hara ✓, khali din peela dashed.
+  - Neeche **ek din ka card**. Har time ke liye dishes ke chips (dabao to hat jaate hain), likhne ka box (Enter ya `,` se judta hai, "Dal, Chawal" ek saath bhi) aur us time ki suggestions.
+  - Card ke buttons: **Agle din me copy →** (copy karke agla din khol deta hai), **Ye din sab dino me copy**, **🔁 Pehle 7 din har hafte repeat karo** (sirf 7 se zyada din wale plan me), **Din khali karo**.
+  - Bina save kiye peeche jaao to poochta hai: "Badlav save nahi hue... Ruko / Chhod do".
+  - Sabse neeche **Plan hatao**. Plan me subscriptions hon to sirf band hota hai aur message aata hai.
+- **Photo aur location** (`profile.tsx`):
+  - Dukaan ki photo: Gallery / Camera / Hatao.
+  - Area ka box.
+  - **📍 Meri abhi ki location lo**: phone ka GPS (High accuracy). India ke bahar ho to mana. Coordinates dikhte hain.
+  - **🗺️ Map par dekho**: Google Maps khulta hai.
+  - Nayi location milne par "Save zaroor dabao" yaad dilata hai, phir **Save**.
+
+### Kyon aise
+- Plan ka menu phone par ek lambi list me bahut lamba hota (30 din x 3 time). Isliye **ek baar me ek din** dikhta hai aur upar din ke chips hain. Kaun sa din bhara hai, chips ke rang se dikh jaata hai.
+- Backend khali jagah nahi leta ("har time me kam se kam ek dish"), isliye app sirf bhari hui jagah bhejta hai. Backend jo bheja wahi rakhta hai aur baaki hata deta hai (website jaisa).
+- Photo upload ke liye Step 7 wala `uploadPhoto` ab sab jagah (review, dish, dukaan) ek hi function hai.
+- Suggestions website wali file `web/src/lib/suggestions.ts` se hi aati hain (Metro `watchFolders` me `web/src/lib` joda), taaki dono jagah ek hi list rahe.
+
+### Files (`mobile/`)
+```
+metro.config.js                     ~ watchFolders me web/src/lib bhi
+src/lib/suggestions.ts              * website ki suggestions dobara export
+src/lib/format.ts                   ~ rupeesToPaise, paiseToRupees (float nahi, regex se)
+src/lib/reviews.ts                  ~ uploadPhoto(path, uri) sab photo routes ke liye
+src/lib/useLocation.ts              ~ getCurrentCoords() (dukaan ki poori sahi location)
+src/lib/provider.ts                 ~ menu: getMyMenu, createMenuItem, updateMenuItem, deleteMenuItem, deleteMenuPhoto
+                                      profile: getMyProfile, updateProfile, deleteShopPhoto
+                                      plans: getMyPlans, getMyPlan, createPlan, updatePlan, savePlanMenu, deletePlan
+src/components/SuggestField.tsx     * box + tap par chips (website ke SuggestInput jaisa)
+src/app/dashboard/menu.tsx          *
+src/app/dashboard/menu-item.tsx     *
+src/app/dashboard/plans.tsx         *
+src/app/dashboard/plan-form.tsx     *
+src/app/dashboard/plan-menu.tsx     *
+src/app/dashboard/profile.tsx       *
+src/app/dashboard/index.tsx         ~ 3 tile, location wala message dabane layak
+web/src/i18n/messages/*.ts          ~ mphoto.fail, mmenu.*, mplan.*, mprof.*, mdash.menuHint, mdash.profileHint; mdash.webNote aur mdash.noLocation ka text badla
+```
+Baaki text website wale `menu.*`, `item.*`, `plans.*`, `photo.*`, `pf.*`, `dash.*`, `meal.*` aur `day.*` hi hain. **Backend me koi badlav nahi.**
+
+### API check (test backend 5001, `8888888888`)
+- **Menu:**
+  - Item banaya (`8550` paise), phir band kiya, phir Somvar + ₹90 kiya.
+  - Photo lagayi aur hatayi.
+  - Float daam (`85.5`) par 400. Customer ko 403.
+  - Item hataya.
+- **Plan:**
+  - 8 din, Lunch+Dinner ka plan banaya (band).
+  - Khali menu par chalu karna mana hua ("Plan chalu karne se pehle har din ka menu bharo").
+  - Pehle aadha menu save kiya, phir poora (16 jagah). Plan chalu kiya.
+  - 7 din kiya to 14 jagah bachi. Phir hataya (`deleted: true`).
+- **Profile:**
+  - Location wahi wapas save hui.
+  - Sirf latitude bhejne par 400, London (India ke bahar) par 400.
+
+Test data sab hata diya.
+
+### Tests (phone, Expo Go)
+Backend chalu karo (`backend` folder):
+```
+cd "C:\Users\Ravi Kumar patel\tiffin-ghar\backend"
+```
+```
+npm run dev
+```
+App (doosra terminal):
+```
+cd "C:\Users\Ravi Kumar patel\tiffin-ghar\mobile"
+```
+```
+npx expo start --clear
+```
+Login: `8888888888`. OTP backend ke terminal me aata hai.
+1. **🏪 Meri dukaan** kholo. Neeche 3 naye tile dikhne chahiye.
+2. **🍛 Mera menu** → **+ Naya item jodo** → naam box par tap karo, chips aayenge → "Veg Thali" chuno → daam `85.50` → Dinner → Har din → **Item jodo**. "Item jud gaya" aur photo wala hissa dikhe. **Gallery** se photo lagao, wapas aao. List me photo aur ₹85.50 dikhe.
+3. Item par **Band karo**. Item par "Band" likha aaye aur wo halka dikhe. Website par customer ko aaj ke menu me na dikhe. Phir **Chalu karo**.
+4. **Badlo** → din Somvar → **Save**. "Save ho gaya" aaye. Phir **Hatao** → pakka? → Haan.
+5. **📅 Subscription plans** → **+ Naya plan banao** → 15 din, Lunch + Dinner, daam `1500` ("Lagbhag ₹50 ek khana" dikhe) → **Plan banao aur menu bharo**.
+6. Din 1 bharo: Lunch me "Dal" likho aur Enter dabao, phir chip "+ Chawal". Dinner me "Roti, Paneer" ek saath likho. Phir **Agle din me copy →** (Din 2 khule) → **Ye din sab dino me copy**. "✓ Poora menu bhara hai" aaye. **Menu save karo** → "Save ho gaya".
+7. Ek dish hatao aur peeche jaao. "Badlav save nahi hue" poochhe → **Ruko** → save karo.
+8. **Plan chalu karo**. "customers ko dikh raha hai" aaye. Customer (`9999999999`) ke app me dukaan ke Plans tab me ye plan dikhe.
+9. **⚙️ Plan ki jaankari badlo** → 7 din → Save. Menu screen par ab 7 hi din hon.
+10. **Plan hatao** → pakka? → Haan. Plan list me na ho.
+11. **📷 Photo aur location** → **Camera** se dukaan ki photo lo. Home par dukaan ke card me nayi photo dikhe. Phir **📍 Meri abhi ki location lo** → ijazat do → coordinates aayenge → **🗺️ Map par dekho** → wapas aao → **Save**.
+
+Check (`mobile` folder). Nayi screen jodi ho to pehle ek baar `npx expo start` chalao (typed routes ke liye):
+```
+npx tsc --noEmit
+```
+```
+npx expo-doctor
+```
+Website (`web` folder, text badla hai):
+```
+cd "C:\Users\Ravi Kumar patel\tiffin-ghar\web"
+```
+```
+npx tsc --noEmit
+```
+
+### Galtiyan aur hal
+| Galti | Hal |
+|---|---|
+| Dukaan/dish ki photo ka jawab `MyMenuItem` maan liya tha | Photo route sirf `{ photoUrl }` lautata hai; type `uploadPhoto<{ photoUrl: string }>` kiya |
+| Plan ka menu khali jagah ke saath bhejte to 400 aata ("Har time me kam se kam ek dish likho") | Save par sirf bhari jagah bhejte hain |
+| Settings se wapas aakar menu taaza karte hi bina save kiye badlav mit jaate | Screen par badlav hon to sirf plan ki jaankari taaza hoti hai, dishes nahi |
+| Bash me lamba `node -e '...'` + heredoc ek saath: "unexpected EOF" | Lambi script file me likho, phir `node file.cjs` |
+
+## 23. Naye chat me ye paste karo (hamesha aakhri section)
+
+> Mai Tiffin Ghar naam ka tiffin service app bana raha hu (Node.js + Express + TypeScript, PostgreSQL, Prisma 7.10.0, Next.js 16 website, React Native Expo mobile app). Project ki `CLAUDE.md` padho. Notes files `docs/notes/` me hain, sabse nayi `tiffin-ghar-project-notes-step8.md`. Mobile Step 1-2, Phase 1 (backend: location sorting, subscription plans din-wise menu ke saath, favourite, review photo) aur Phase 2 (provider dashboard: location, nashta/lunch/dinner, plans ka grid, subscriptions, suggestion chips) Phase 3 (front page: location se paas ki dukaan, top rating, area, pure veg, naya card, plans ki row) Phase 4 (dukaan ke tabs, plan lena, mere subscriptions, favourite, share) Phase 5 (review me photo, baar-baar logout ka bug fix) Phase 6 (naya design: status ke rang, order timeline, header/footer, login) Mobile Step 3 (OTP login) aur Mobile Step 4 (dukaan list, phone ki location, plans ki row) ho gaye. Mobile Step 5 (dukaan ki screen: tabs, cart, order) aur Mobile Step 6 (plan lena, mere orders live timeline ke saath, mere subscriptions) bhi ho gaye. Mobile Step 7 (pasandida list, review + photo gallery/camera se) bhi ho gaya. Mobile Step 8 (dukaan wale ka dashboard: khula/band, orders aur status, subscriptions) bhi ho gaya. Mobile Step 9 (app se menu, plans din-wise, photo, location badalna) bhi ho gaya. Ab CLAUDE.md ke plan ka agla kaam karna hai. Hinglish me step by step samjhao, har badlav ke baad kya badla, kyon aur kaun si file batao, saari test commands (PowerShell, ek line me ek) aur browser ke steps do, aur notes file me naya section jodo.

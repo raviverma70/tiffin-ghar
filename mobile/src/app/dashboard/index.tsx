@@ -69,7 +69,11 @@ function Dashboard() {
 
       {shop.status === "PENDING" && <Text style={styles.warn}>⏳ {t("dash.pending")}</Text>}
       {shop.status === "REJECTED" && <Text style={styles.bad}>{t("dash.rejected")}</Text>}
-      {(shop.latitude === null || shop.longitude === null) && <Text style={styles.warn}>📍 {t("mdash.noLocation")}</Text>}
+      {(shop.latitude === null || shop.longitude === null) && (
+        <Pressable onPress={() => router.push("/dashboard/profile")} accessibilityRole="button">
+          <Text style={styles.warn}>📍 {t("mdash.noLocation")} →</Text>
+        </Pressable>
+      )}
       {error ? <ErrorText>{error}</ErrorText> : null}
 
       {shop.status === "APPROVED" && (
@@ -105,6 +109,29 @@ function Dashboard() {
         <Text style={styles.tileTitle}>🗓️ {t("dash.newSubs", { n: newSubs ?? "-" })}</Text>
         <Text style={styles.muted}>{t("dash.subsHint")} →</Text>
       </Pressable>
+
+      {/* Step 9: menu, plans, photo/location bhi app se */}
+      <View style={styles.grid}>
+        {(
+          [
+            { href: "/dashboard/menu", icon: "🍛", title: t("menu.title"), hint: t("mdash.menuHint") },
+            { href: "/dashboard/plans", icon: "📅", title: t("dash.plansCard"), hint: t("dash.plansHint") },
+            { href: "/dashboard/profile", icon: "📷", title: t("mprof.title"), hint: t("mdash.profileHint") },
+          ] as const
+        ).map((tile) => (
+          <Pressable
+            key={tile.href}
+            onPress={() => router.push(tile.href)}
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.tile, pressed && { opacity: 0.9 }]}
+          >
+            <Text style={styles.tileTitle}>
+              {tile.icon} {tile.title}
+            </Text>
+            <Text style={styles.muted}>{tile.hint} →</Text>
+          </Pressable>
+        ))}
+      </View>
 
       <Text style={styles.note}>{t("mdash.webNote")}</Text>
     </ScrollView>
@@ -151,5 +178,6 @@ const styles = StyleSheet.create({
   tile: { backgroundColor: "#fff", borderRadius: radius.xl, borderWidth: 1, borderColor: colors.border, padding: 16, gap: 4 },
   blue: { backgroundColor: "#eff6ff", borderColor: "#bfdbfe" },
   tileTitle: { fontSize: 18, fontWeight: "700", color: colors.text },
+  grid: { gap: 14 },
   note: { fontSize: 13, color: colors.muted, lineHeight: 19 },
 });

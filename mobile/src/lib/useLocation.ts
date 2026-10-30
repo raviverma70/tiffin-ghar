@@ -55,3 +55,17 @@ export function useLocation() {
 
   return { state, ask, clear };
 }
+
+// Ek baar abhi ki GPS location (dukaan ki location bharne ke liye, poori sahi, gol nahi)
+export async function getCurrentCoords(): Promise<{ ok: true; coords: Coords } | { ok: false; reason: "denied" | "failed" }> {
+  try {
+    const perm = await Location.requestForegroundPermissionsAsync();
+    if (perm.status !== "granted") return { ok: false, reason: "denied" };
+    const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+    const { latitude, longitude } = pos.coords;
+    if (!inIndia(latitude, longitude)) return { ok: false, reason: "failed" };
+    return { ok: true, coords: { lat: latitude, lng: longitude } };
+  } catch {
+    return { ok: false, reason: "failed" };
+  }
+}

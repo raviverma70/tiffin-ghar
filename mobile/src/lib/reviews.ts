@@ -16,21 +16,20 @@ export function postReview(orderId: number, rating: number, comment: string) {
   });
 }
 
-// Phone ki photo (file:// uri) ko review par lagao
-export async function uploadReviewPhoto(reviewId: number, uri: string) {
+// Phone ki photo (file:// uri) kisi bhi photo wale route par (review, dukaan, dish)
+export async function uploadPhoto<T>(path: string, uri: string) {
   let blob: Blob;
   try {
     blob = await (await fetch(uri)).blob();
   } catch {
     return { ok: false as const, status: 0, error: "Ye photo sahi nahi hai. JPG, PNG ya WebP bhejo" };
   }
-  return api<ReviewPhoto>(`/reviews/${reviewId}/photos`, {
-    method: "POST",
-    blob,
-    contentType: "image/jpeg",
-    auth: true,
-    timeoutMs: 60_000,
-  });
+  return api<T>(path, { method: "POST", blob, contentType: "image/jpeg", auth: true, timeoutMs: 60_000 });
+}
+
+// Phone ki photo ko review par lagao
+export function uploadReviewPhoto(reviewId: number, uri: string) {
+  return uploadPhoto<ReviewPhoto>(`/reviews/${reviewId}/photos`, uri);
 }
 
 export function deleteReviewPhoto(reviewId: number, photoId: number) {
